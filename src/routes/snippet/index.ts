@@ -7,9 +7,9 @@ function createSnippet (data, success, failure) {
 
     snippet.save(err => {
         if (err) {
-            success();
+            failure(err);
         } else {
-            failure();
+            success();
         }
     })
 }
@@ -24,11 +24,14 @@ router.get('/', async (req, res) => {
     }
 })
 
-router.post('/snip', (req, res) => {
+router.post('/', (req, res) => {
     const { date, author, title, description, code, tags, likes } = req.body;
+    console.log(req.body);
 
     const data = { date, author, title, description, code, tags, likes };
     const successCallback = () => res.status(200).send("Created snippet");
     const failureCallback = (err) => res.status(500).json(err);
     createSnippet(data, successCallback, failureCallback);
 })
+
+export default router;
