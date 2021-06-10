@@ -1,37 +1,37 @@
-import express from 'express';
-const router = express.Router();
-import Snippet from '../../mongoDB/models/Snippet';
+import express from 'express'
+const router = express.Router()
+import Snippet from '../../mongoDB/models/Snippet'
 
 function createSnippet (data, success, failure) {
-    const snippet = new Snippet(data);
+    const snippet = new Snippet(data)
 
     snippet.save(err => {
         if (err) {
-            failure(err);
+            failure(err)
         } else {
-            success();
+            success()
         }
     })
 }
 
 router.get('/', async (req, res) => {
     try {
-        const snippets = await Snippet.find({});
-        res.status(200).send(snippets);
+        const snippets = await Snippet.find({})
+        res.status(200).send(snippets)
     } catch (err) {
-        console.error(err);
-        res.status(500).send("Error");
+        console.error(err)
+        res.status(500).send('Error')
     }
 })
 
 router.post('/', (req, res) => {
-    const { date, author, title, description, code, tags, likes } = req.body;
-    console.log(req.body);
+    const { date, author, title, description, code, tags, likes } = req.body
+    console.log(req.body)
 
-    const data = { date, author, title, description, code, tags, likes };
-    const successCallback = () => res.status(200).send("Created snippet");
-    const failureCallback = (err) => res.status(500).json(err);
-    createSnippet(data, successCallback, failureCallback);
+    const data = { date, author, title, description, code, tags, likes }
+    const successCallback = () => res.status(200).send('Created snippet')
+    const failureCallback = (err) => res.status(500).json(err)
+    createSnippet(data, successCallback, failureCallback)
 })
 
-export default router;
+export default router

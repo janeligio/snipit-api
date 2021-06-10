@@ -8,7 +8,7 @@ export function validateLogin(email: string, password: string):ValidationMessage
         isValid: true,
         error: undefined
     }
-    return message;
+    return message
 }
 
 export function validateSignup(email: string, password: string):ValidationMessage {
@@ -16,5 +16,5 @@ export function validateSignup(email: string, password: string):ValidationMessag
         isValid: true,
         error: undefined
     }
-    return message;
+    return message
 }

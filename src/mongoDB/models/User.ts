@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model } from 'mongoose'
 
 const UserSchema = new Schema({
     date: { type: Date, default: Date.now() },
@@ -27,8 +27,8 @@ const UserSchema = new Schema({
     },
     publicSnippets: [Schema.Types.ObjectId],
     privateSnippets: [Schema.Types.ObjectId]
-});
+})
 
-const User = model('User', UserSchema);
+const User = model('User', UserSchema)
 
-export default User;
+export default User
