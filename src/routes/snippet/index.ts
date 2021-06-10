@@ -1,6 +1,6 @@
 import express from 'express'
 const router = express.Router()
-import Snippet from '../../mongoDB/models/Snippet'
+import Snippet from '../../mongoose/models/Snippet'
 
 function createSnippet (data, success, failure) {
     const snippet = new Snippet(data)
