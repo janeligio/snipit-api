@@ -15,6 +15,7 @@ function createSnippet (data, success, failure) {
 }
 
 router.get('/', async (req, res) => {
+    console.log(req.headers.host);
     try {
         const snippets = await Snippet.find({})
         res.status(200).send(snippets)

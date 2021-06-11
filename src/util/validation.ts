@@ -4,41 +4,51 @@ import User from '../mongoose/models/User';
 
 interface ValidationMessage {
     isValid: boolean;
-    error: string;
+    errors: string;
 }
 
 export async function validateLogin(email: string, password: string): Promise<ValidationMessage> {
     const message: ValidationMessage = {
         isValid: true,
-        error: undefined,
+        errors: undefined,
     };
 
     // Check if email exists (user is in the database)
     const user = await User.findOne({ email }, 'email').exec();
     if (!user) {
         message.isValid = false;
-        message.error = 'Email does not exist.';
+        message.errors = 'Email does not exist.';
     }
-
-    // Check if password matches what is in the database
 
     return message;
 }
 
-export async function validateSignup(email: string, password: string): Promise<ValidationMessage> {
+export async function validateSignup(email: string, password: string, confirmPassword: string): Promise<ValidationMessage> {
     const message: ValidationMessage = {
         isValid: true,
-        error: undefined,
+        errors: undefined,
     };
 
+    // Check if email already exists
+    const user = await User.findOne({ email }, 'email').exec();
+    if (user) {
+        message.isValid = false;
+        message.errors = 'Email is already being used.';
+    }
     // Check email
     if (!EmailValidator.validate(email)) {
         message.isValid = false;
-        message.error = 'Invalid email.';
+        message.errors = 'Invalid email.';
         return message;
     }
 
     // Check password
+    if (password !== confirmPassword) {
+        message.isValid = false;
+        message.errors = 'Passwords do not match.';
+        return message;
+    }
+    
     const isValidPassword = PasswordSchema.validate(password, { list: true });
 
     if (isValidPassword.length > 0) {
@@ -69,14 +79,8 @@ export async function validateSignup(email: string, password: string): Promise<V
             }
         })
         message.isValid = false;
-        message.error = rulesBroken.join('\n');
-    }
-
-    // Check if email already exists
-    const user = await User.findOne({ email }, 'email').exec();
-    if (user) {
-        message.isValid = false;
-        message.error = 'Email is already being used.';
+        message.errors = rulesBroken.join('\n');
+        return message;
     }
 
     return message;

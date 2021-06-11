@@ -1,19 +1,23 @@
 import { Schema, model } from 'mongoose'
 
 const UserSchema = new Schema({
-    date: { type: Date, default: Date.now() },
-    username: {
+    dateCreated: { type: Date, default: Date.now() },
+    email: {
         type: String, 
         minLength: 4,
-        maxLength: 30,
+        maxLength: 100,
         required: true
     },
-    email: String,
     password: {
         type: String,
         minLength: 8,
-        maxLength: 20,
+        maxLength: 200,
         required: true
+    },
+    name: {
+        type: String, 
+        minLength: 4,
+        maxLength: 100,
     },
     info: {
         name: {
