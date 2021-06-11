@@ -17,26 +17,26 @@ router.get('/', authenticateUser, async (req, res) => {
 
     if (id) {
         // Private access - Viewing your own profile
-        if (validateUserAuthenticity(res.locals, req.body.id)) {
+        if (validateUserAuthenticity(res.locals.auth, req.body.id)) {
+            console.log("You are who you are")
             try {
                 const user = await User.findById(id, privateFields).exec();
                 res.json(user);
             } catch (err) {
-
+                res.status(404).json({error: 'User does not exist.'});
             }
-
         } else {
             // Public access - Viewing someone else's
             try {
                 const user = await User.findById(id, publicFields).exec();
                 res.status(200).json(user);
-
             } catch (err) {
                 res.status(404).json({error: 'User does not exist.'});
             }
         }
+    } else {
+        res.json({error: 'Must specify userid'});
     }
-    res.json({error: 'Must specify userid'});
 })
 
 /**
