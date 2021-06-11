@@ -1,6 +1,7 @@
 /node_modules
 /api_responses
-/src/config
+/src/config/keys.ts
 /dist
 /dist/config
 /dist/routes
+.vscode/
