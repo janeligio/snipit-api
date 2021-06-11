@@ -6,6 +6,7 @@ import User from '../mongoose/models/User';
 import { validateLogin, validateSignup } from '../util/validation';
 import { jwtSecret } from '../config/keys';
 
+
 const saltRounds = 10;
 
 /**
@@ -13,13 +14,13 @@ const saltRounds = 10;
  * @description Validates user, password, and pushes new User to database
  * @access Public
  */
- router.post('/signup', async (req, res) => {
+router.post('/signup', async (req, res) => {
     const { email, password, confirmPassword } = req.body;
-    const {isValid, errors} = await validateSignup(email, password, confirmPassword);
-    
+    const { isValid, errors } = await validateSignup(email, password, confirmPassword);
+
     if (!isValid) { // Email or password are not valid
         res.status(500);
-        res.send({error: errors});
+        res.send({ error: errors });
     } else {
         // Email and password are valid
 
@@ -54,11 +55,11 @@ const saltRounds = 10;
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
-    const {isValid, errors} = await validateLogin(email, password);
+    const { isValid, errors } = await validateLogin(email, password);
 
     if (!isValid) {
         res.status(500);
-        res.send({error: errors})
+        res.send({ error: errors })
     } else {
         // Check if password matches what is in the database
         const user: any = await User.findOne({ email }, 'password').exec();
@@ -66,7 +67,7 @@ router.post('/login', async (req, res) => {
 
         if (!passwordMatches) {
             res.status(500);
-            res.send({error: 'Incorrect password.'});
+            res.send({ error: 'Incorrect password.' });
         } else {
             res.status(200);
             res.header('location', '/user/' + user._id);
@@ -75,16 +76,16 @@ router.post('/login', async (req, res) => {
             const payload = { id: user._id };
             // Sign the token
             // Eventully token sessions will be recorded in a cache
-            jwt.sign(payload, jwtSecret, { expiresIn: '7d'}, (err, token) => {
+            jwt.sign(payload, jwtSecret, { expiresIn: '7d' }, (err, token) => {
                 if (err) {
-                    res.status(500).send({error: 'Error authenticating'});
+                    res.status(500).send({ error: 'Error authenticating' });
                 } else {
                     res.status(200).json({
                         success: true,
                         token: `Bearer ${token}`
                     })
                 }
-            }); 
+            });
         }
     }
 });
