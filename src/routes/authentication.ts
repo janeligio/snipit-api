@@ -2,9 +2,9 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 const router = express.Router();
 import jwt from 'jsonwebtoken';
-import User from '../../mongoose/models/User';
-import { validateLogin, validateSignup } from '../../util/validation';
-import { jwtSecret } from '../../config/keys';
+import User from '../mongoose/models/User';
+import { validateLogin, validateSignup } from '../util/validation';
+import { jwtSecret } from '../config/keys';
 
 const saltRounds = 10;
 
