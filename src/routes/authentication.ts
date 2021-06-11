@@ -61,7 +61,7 @@ router.post('/login', async (req, res) => {
         res.send({error: errors})
     } else {
         // Check if password matches what is in the database
-        const user: any = await User.findOne({ email }).exec();
+        const user: any = await User.findOne({ email }, 'password').exec();
         const passwordMatches = bcrypt.compareSync(password, user.password); // true
 
         if (!passwordMatches) {
@@ -71,27 +71,19 @@ router.post('/login', async (req, res) => {
             res.status(200);
             res.header('location', '/user/' + user._id);
 
-            const userInfo = {
-                name: user.name,
-                email: user.email,
-                info: user.info,
-                publicSnippets: user.publicSnippets,
-                privateSnippets: user.privateSnippets,
-            }
-
             // This is what will authenticate a user
-            const payload = { id: user.id };
-
+            const payload = { id: user._id };
             // Sign the token
             // Eventully token sessions will be recorded in a cache
             jwt.sign(payload, jwtSecret, { expiresIn: '7d'}, (err, token) => {
                 if (err) {
                     res.status(500).send({errors: 'Error authenticating'});
+                } else {
+                    res.status(200).json({
+                        success: true,
+                        token: `Bearer ${token}`
+                    })
                 }
-                res.status(200).json({
-                    success: true,
-                    token: `Bearer ${token}`
-                })
             }); 
         }
     }
