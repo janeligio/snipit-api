@@ -1,5 +1,6 @@
 import express from 'express'
 import { authenticateUser, validateUserAuthenticity } from '../middleware/authenticator'
+import { validateSnippet } from '../util/validation';
 const router = express.Router()
 import Snippet from '../mongoose/models/Snippet'
 
@@ -56,14 +57,20 @@ router.get('/snippet/:snippetId', async (req, res) => {
  * @description Post a snippet
  * @access Private
  */
-router.post('/', authenticateUser, (req, res) => {
+router.post('/', authenticateUser, async (req, res) => {
     const { id, author, title, description, code, tags, likes, isPrivate } = req.body;
     console.log(req.body);
+    const { isValid, errors } = await validateSnippet({ title, description, code});
 
-    const data = { owner: id, author, title, description, code, tags, likes, isPrivate };
-    const successCallback = () => res.status(200).send('Created snippet');
-    const failureCallback = (err) => res.status(500).json(err);
-    createSnippet(data, successCallback, failureCallback);
+    if (!isValid) {
+        res.status(500);
+        res.json({error: errors});
+    } else {
+        const data = { owner: id, author, title, description, code, tags, likes, isPrivate };
+        const successCallback = () => res.status(200).send('Created snippet');
+        const failureCallback = (err) => res.status(500).json(err);
+        createSnippet(data, successCallback, failureCallback);
+    }
 })
 
 /**
