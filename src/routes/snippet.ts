@@ -66,4 +66,34 @@ router.post('/', authenticateUser, (req, res) => {
     createSnippet(data, successCallback, failureCallback);
 })
 
+/**
+ * @route DELETE /snippets/:snippetId
+ * @description Delete a snippet from the database
+ * @access Private
+ */
+router.delete('/:snippetId', authenticateUser, async (req, res) => {
+    const { snippetId } = req.params;
+    const { auth } = res.locals;
+
+    if (snippetId && auth) {
+        try {
+            const snippet:any = await Snippet.findById(snippetId, 'owner').exec();
+            if (snippet.owner.toString() === auth.id) {
+                // Delete snippet
+                try {
+                    await Snippet.deleteOne({ _id: snippetId });
+                    res.json({message: `Successfully deleted snippet ${snippetId}`});
+                } catch (err) {
+                    res.json({error: err})
+                }
+            } else {
+                // If requester is not the owner of the snippet they are forbidden
+                res.status(403).json({ error: 'FORBIDDEN'});
+            }
+        } catch (err) {
+            res.json({error: 'Snippet does not exist.'})
+        }        
+    }
+})
+
 export default router;
