@@ -1,8 +1,10 @@
 import express from 'express';
-const bcrypt = require('bcrypt');
+import bcrypt from 'bcrypt';
 const router = express.Router();
+import jwt from 'jsonwebtoken';
 import User from '../../mongoose/models/User';
 import { validateLogin, validateSignup } from '../../util/validation';
+import { jwtSecret } from '../../config/keys';
 
 const saltRounds = 10;
 
@@ -68,6 +70,7 @@ router.post('/login', async (req, res) => {
         } else {
             res.status(200);
             res.header('location', '/user/' + user._id);
+
             const userInfo = {
                 name: user.name,
                 email: user.email,
@@ -75,7 +78,21 @@ router.post('/login', async (req, res) => {
                 publicSnippets: user.publicSnippets,
                 privateSnippets: user.privateSnippets,
             }
-            res.send(userInfo);
+
+            // This is what will authenticate a user
+            const payload = { id: user.id };
+
+            // Sign the token
+            // Eventully token sessions will be recorded in a cache
+            jwt.sign(payload, jwtSecret, { expiresIn: '7d'}, (err, token) => {
+                if (err) {
+                    res.status(500).send({errors: 'Error authenticating'});
+                }
+                res.status(200).json({
+                    success: true,
+                    token: `Bearer ${token}`
+                })
+            }); 
         }
     }
 });
