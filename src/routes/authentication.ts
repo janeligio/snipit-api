@@ -77,7 +77,7 @@ router.post('/login', async (req, res) => {
             // Eventully token sessions will be recorded in a cache
             jwt.sign(payload, jwtSecret, { expiresIn: '7d'}, (err, token) => {
                 if (err) {
-                    res.status(500).send({errors: 'Error authenticating'});
+                    res.status(500).send({error: 'Error authenticating'});
                 } else {
                     res.status(200).json({
                         success: true,
