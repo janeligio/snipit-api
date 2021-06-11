@@ -54,13 +54,13 @@ export async function validateSignup(email: string, password: string, confirmPas
     if (isValidPassword.length > 0) {
         const rulesBroken: string[] = [];
         isValidPassword.forEach(ruleBroken => {
-            let message = '- Password must ';
+            let message = 'Password must ';
             switch (ruleBroken) {
                 case 'min':
-                    rulesBroken.push(message + `have at least ${PasswordRules.min} characters.`);
+                    rulesBroken.push(message + `have at least ${PasswordRules.min} characters`);
                     break;
                 case 'max':
-                    rulesBroken.push(message + `have fewer than ${PasswordRules.max + 1} characters.`);
+                    rulesBroken.push(message + `have fewer than ${PasswordRules.max + 1} characters`);
                     break;
                 case 'digits':
                     // Fill in
@@ -79,7 +79,36 @@ export async function validateSignup(email: string, password: string, confirmPas
             }
         })
         message.isValid = false;
-        message.errors = rulesBroken.join('\n');
+        message.errors = 'Password must ' + rulesBroken.join(', ') + '.';
+        return message;
+    }
+
+    return message;
+}
+
+export async function validateSnippet(snippet): Promise<ValidationMessage> {
+    const { title, description, code} = snippet;
+    const message: ValidationMessage = {
+        isValid: true,
+        errors: undefined,
+    };
+
+    // Validate title
+    if (title.length > 100) {
+        message.isValid = false;
+        message.errors = 'Title must be fewer than 100 characters';
+        return message;
+    }
+
+    if (description.length > 1000) {
+        message.isValid = false;
+        message.errors = 'Description must be fewer than 1000 characters';
+        return message;
+    }
+
+    if (code.length> 3000) {
+        message.isValid = false;
+        message.errors = 'Code character count must be fewer than 3000 characters';
         return message;
     }
 
