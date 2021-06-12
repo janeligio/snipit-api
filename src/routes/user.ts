@@ -14,16 +14,17 @@ const privateFields = 'email name info publicSnippets privateSnippets';
  */
 router.get('/', authenticateUser, async (req, res) => {
     const { id } = req.query;
-
     if (id) {
         // Private access - Viewing your own profile
-        if (validateUserAuthenticity(res.locals.auth, req.body.id)) {
+        console.log(validateUserAuthenticity(res.locals, id))
+        if (validateUserAuthenticity(res.locals, id)) {
             console.log("You are who you are")
             try {
                 const user = await User.findById(id, privateFields).exec();
+                console.log('sending data:', user);
                 res.json(user);
             } catch (err) {
-                res.status(404).json({error: 'User does not exist.'});
+                res.status(404).json({ error: 'User does not exist.' });
             }
         } else {
             // Public access - Viewing someone else's
@@ -31,11 +32,11 @@ router.get('/', authenticateUser, async (req, res) => {
                 const user = await User.findById(id, publicFields).exec();
                 res.status(200).json(user);
             } catch (err) {
-                res.status(404).json({error: 'User does not exist.'});
+                res.status(404).json({ error: 'User does not exist.' });
             }
         }
     } else {
-        res.json({error: 'Must specify userid'});
+        res.json({ error: 'Must specify userid' });
     }
 })
 
@@ -46,16 +47,16 @@ router.get('/', authenticateUser, async (req, res) => {
  */
 router.get('/:username', async (req, res) => {
     const { username } = req.params;
-        try {
-            const user = await User.findOne({username}, publicFields).exec();
-            res.json(user);
-        } catch (err) {
-            res.json({error: 'User does not exist.'})
-        }
+    try {
+        const user = await User.findOne({ username }, publicFields).exec();
+        res.json(user);
+    } catch (err) {
+        res.json({ error: 'User does not exist.' })
+    }
     if (username) {
 
     } else {
-        res.json({error: 'Must specify username'});
+        res.json({ error: 'Must specify username' });
     }
 })
 
