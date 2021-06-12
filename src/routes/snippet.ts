@@ -4,7 +4,7 @@ import { validateSnippet } from '../util/validation';
 const router = express.Router()
 import Snippet from '../mongoose/models/Snippet'
 
-function createSnippet (data, success, failure) {
+function createSnippet(data, success, failure) {
     const snippet = new Snippet(data)
 
     snippet.save(err => {
@@ -45,13 +45,27 @@ router.get('/snippet/:snippetId', async (req, res) => {
             const snippet = await Snippet.findById(snippetId).exec();
             res.json(snippet);
         } catch (err) {
-            res.json({error: 'Could not find snippet'});
+            res.json({ error: 'Could not find snippet' });
         }
     } else {
-        res.json({error: 'Must specify snippet id'});
+        res.json({ error: 'Must specify snippet id' });
     }
 })
 
+/**
+ * @route GET /snippets/:userId
+ * @description Get someone's snippets
+ * @access Public
+ */
+router.get('/:userId', authenticateUser, async (req, res) => {
+    const { userId } = req.params;
+
+    if (userId) {
+        const snippets = await Snippet.find({ owner: userId }).exec();
+        console.log(snippets);
+        res.json(snippets);
+    }
+});
 /**
  * @route POST /snippets/
  * @description Post a snippet
@@ -60,11 +74,11 @@ router.get('/snippet/:snippetId', async (req, res) => {
 router.post('/', authenticateUser, async (req, res) => {
     const { id, author, title, description, code, tags, likes, isPrivate } = req.body;
     console.log(req.body);
-    const { isValid, errors } = await validateSnippet({ title, description, code});
+    const { isValid, errors } = await validateSnippet({ title, description, code });
 
     if (!isValid) {
         res.status(500);
-        res.json({error: errors});
+        res.json({ error: errors });
     } else {
         const data = { owner: id, author, title, description, code, tags, likes, isPrivate };
         const successCallback = () => res.status(200).send('Created snippet');
@@ -84,22 +98,22 @@ router.delete('/:snippetId', authenticateUser, async (req, res) => {
 
     if (snippetId && auth) {
         try {
-            const snippet:any = await Snippet.findById(snippetId, 'owner').exec();
+            const snippet: any = await Snippet.findById(snippetId, 'owner').exec();
             if (snippet.owner.toString() === auth.id) {
                 // Delete snippet
                 try {
                     await Snippet.deleteOne({ _id: snippetId });
-                    res.json({message: `Successfully deleted snippet ${snippetId}`});
+                    res.json({ message: `Successfully deleted snippet ${snippetId}` });
                 } catch (err) {
-                    res.json({error: err})
+                    res.json({ error: err })
                 }
             } else {
                 // If requester is not the owner of the snippet they are forbidden
-                res.status(403).json({ error: 'FORBIDDEN'});
+                res.status(403).json({ error: 'FORBIDDEN' });
             }
         } catch (err) {
-            res.json({error: 'Snippet does not exist.'})
-        }        
+            res.json({ error: 'Snippet does not exist.' })
+        }
     }
 })
 
