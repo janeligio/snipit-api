@@ -1,5 +1,7 @@
+/* eslint-disable semi */
 import express from 'express';
 import { authenticateUser, validateUserAuthenticity } from '../middleware/authenticator';
+import { validateBio } from '../util/validation';
 import User from '../mongoose/models/User';
 
 const router = express.Router();
@@ -7,8 +9,18 @@ const router = express.Router();
 const publicFields = 'name info publicSnippets';
 const privateFields = 'email name info publicSnippets privateSnippets';
 
+function edit(user, success, failure) {
+    user.save(err => {
+        if (err) {
+            failure(err)
+        } else {
+            success()
+        }
+    })
+}
+
 /**
- * @route POST /user/:userId
+ * @route POST /user
  * @description Access user's information and snippets
  * @access Private
  */
@@ -57,6 +69,43 @@ router.get('/:username', async (req, res) => {
 
     } else {
         res.json({ error: 'Must specify username' });
+    }
+})
+
+/**
+ * @route PUT /user/edit/:username
+ * @description Edit user's name and bio
+ * @access Private
+ */
+ router.put('/edit/:username', authenticateUser, async (req, res) => {
+    const { id } = req.query;
+    const { name, bio } = req.body;
+    // check name and bio
+    const { isValid, errors } = await validateBio(name, bio);
+    console.log(validateBio(name, bio));
+    if (id) {
+        if (isValid) {
+            // Private access - Editing your own profile
+            console.log(validateUserAuthenticity(res.locals, id))
+            if (validateUserAuthenticity(res.locals, id)) {
+                console.log("You are who you are")
+                try {
+                    const user: any = await User.findById(id, privateFields).exec();
+                    user.info.name = name;
+                    user.info.bio = bio;
+                    console.log('user info:', user);
+                    const successCallback = () => res.status(200).send('Updated user account information');
+                    const failureCallback = (err) => res.status(500).json(err);
+                    edit(user, successCallback, failureCallback);
+                } catch (err) {
+                    res.status(404).json({ error: 'User does not exist.' });
+                }
+            }
+        } else {
+            res.json({ error: errors });
+        }
+    } else {
+        res.json({ error: 'Must specify userid' });
     }
 })
 

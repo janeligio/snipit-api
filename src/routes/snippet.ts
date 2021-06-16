@@ -1,3 +1,4 @@
+/* eslint-disable semi */
 import express from 'express'
 import { authenticateUser, validateUserAuthenticity } from '../middleware/authenticator'
 import { validateSnippet } from '../util/validation';
@@ -7,6 +8,16 @@ import Snippet from '../mongoose/models/Snippet'
 function createSnippet(data, success, failure) {
     const snippet = new Snippet(data)
 
+    snippet.save(err => {
+        if (err) {
+            failure(err)
+        } else {
+            success()
+        }
+    })
+}
+
+function editSnippet(snippet, success, failure) {
     snippet.save(err => {
         if (err) {
             failure(err)
@@ -114,6 +125,41 @@ router.delete('/:snippetId', authenticateUser, async (req, res) => {
         } catch (err) {
             res.json({ error: 'Snippet does not exist.' })
         }
+    }
+})
+
+/**
+ * @route PUT /user/edit/:snippetId
+ * @description Edit a snippet
+ * @access Private
+ */
+ router.put('/edit/:snippetId', authenticateUser, async (req, res) => {
+    const { id, author, title, description, code, tags, likes, isPrivate } = req.body;
+    const { isValid, errors } = await validateSnippet({ author, title, description, code, isPrivate });
+    console.log(validateSnippet({ author, title, description, code, isPrivate }));
+
+    if (id) {
+        if (isValid) {
+            // Private access - Editing your own snippet
+            console.log(validateUserAuthenticity(res.locals, id));
+
+            if (validateUserAuthenticity(res.locals, id)) {
+                console.log("You are who you are")
+                try {
+                    const snippet: any = await Snippet.findById(id).exec();
+                    console.log('snippet:', snippet);
+                    const successCallback = () => res.status(200).send('Updated snippet information');
+                    const failureCallback = (err) => res.status(500).json(err);
+                    editSnippet(snippet, successCallback, failureCallback);
+                } catch (err) {
+                    res.status(404).json({ error: 'Snippet does not exist.' });
+                }
+            }
+        } else {
+            res.json({ error: errors });
+        }
+    } else {
+        res.json({ error: 'Must specify snippetid' });
     }
 })
 

@@ -5,3 +5,4 @@
 /dist/config
 /dist/routes
 .vscode/
+.eslintrc.js
