@@ -1,7 +1,7 @@
 import { Schema, model } from 'mongoose'
 
 const SnippetSchema = new Schema({
-    date: { type: Date, default: Date.now()},
+    date: { type: Date, default: Date.now() },
     updated: { type: Date },
     isPrivate: {
         type: Boolean,
@@ -10,6 +10,10 @@ const SnippetSchema = new Schema({
     owner: {
         type: Schema.Types.ObjectId,
         required: true
+    },
+    fileName: {
+        type: String,
+        maxLength: 50,
     },
     author: {
         type: String
