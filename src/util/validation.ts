@@ -117,7 +117,7 @@ export async function validateSnippet(snippet): Promise<ValidationMessage> {
         return message;
     }
 
-    if (isPrivate !== true || isPrivate !== false) {
+    if (typeof(isPrivate) !== 'boolean') {
         message.isValid = false;
         message.errors = 'IsPrivate must be a boolean value';
     }
@@ -134,13 +134,11 @@ export async function validateBio(name, bio): Promise<ValidationMessage> {
     if (name.length > 30) {
         message.isValid = false;
         message.errors = 'Name must be fewer than 30 characters';
-        return message;
     }
 
     if (bio.length > 250) {
         message.isValid = false;
         message.errors = 'Bio must be fewer than 250 characters';
-        return message;
     }
 
     return message;

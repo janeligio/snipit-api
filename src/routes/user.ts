@@ -20,7 +20,7 @@ function edit(user, success, failure) {
 }
 
 /**
- * @route POST /user
+ * @route GET /user
  * @description Access user's information and snippets
  * @access Private
  */
@@ -53,19 +53,19 @@ router.get('/', authenticateUser, async (req, res) => {
 })
 
 /**
- * @route POST /user/:username
+ * @route GET /user/:username
  * @description Access another user's page, information and snippets
  * @access Public
  */
-router.get('/:username', async (req, res) => {
-    const { username } = req.params;
+router.get('/:email', async (req, res) => {
+    const { email } = req.params;
     try {
-        const user = await User.findOne({ username }, publicFields).exec();
+        const user = await User.findOne({ email }, publicFields).exec();
         res.json(user);
     } catch (err) {
         res.json({ error: 'User does not exist.' })
     }
-    if (username) {
+    if (email) {
 
     } else {
         res.json({ error: 'Must specify username' });
@@ -73,16 +73,16 @@ router.get('/:username', async (req, res) => {
 })
 
 /**
- * @route PUT /user/edit/:username
+ * @route PUT /user/edit/
  * @description Edit user's name and bio
  * @access Private
  */
- router.put('/edit/:username', authenticateUser, async (req, res) => {
+ router.put('/edit/', authenticateUser, async (req, res) => {
     const { id } = req.query;
     const { name, bio } = req.body;
     // check name and bio
     const { isValid, errors } = await validateBio(name, bio);
-    console.log(validateBio(name, bio));
+    console.log("here", validateBio(name, bio));
     if (id) {
         if (isValid) {
             // Private access - Editing your own profile
@@ -94,7 +94,7 @@ router.get('/:username', async (req, res) => {
                     user.info.name = name;
                     user.info.bio = bio;
                     console.log('user info:', user);
-                    const successCallback = () => res.status(200).send('Updated user account information');
+                    const successCallback = () => res.status(200).send(`Updated user account information: ${user}`);
                     const failureCallback = (err) => res.status(500).json(err);
                     edit(user, successCallback, failureCallback);
                 } catch (err) {

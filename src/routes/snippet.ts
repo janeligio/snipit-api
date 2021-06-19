@@ -44,7 +44,7 @@ router.get('/', async (req, res) => {
 })
 
 /**
- * @route GET /snippets/:snippetId
+ * @route GET /snippets/snippet/:snippetId
  * @description Get a specific snippet.
  * @access Public
  */
@@ -129,24 +129,32 @@ router.delete('/:snippetId', authenticateUser, async (req, res) => {
 })
 
 /**
- * @route PUT /user/edit/:snippetId
+ * @route PUT /snippets/edit/:snippetId
  * @description Edit a snippet
  * @access Private
  */
- router.put('/edit/:snippetId', authenticateUser, async (req, res) => {
+ router.put('/edit/', authenticateUser, async (req, res) => {
     const { id, author, title, description, code, tags, likes, isPrivate } = req.body;
+    //const { snippetId } = req.params;
+    const { snippetId, userId } = req.query;
+    console.log(typeof(isPrivate));
     const { isValid, errors } = await validateSnippet({ author, title, description, code, isPrivate });
     console.log(validateSnippet({ author, title, description, code, isPrivate }));
 
-    if (id) {
+    if (snippetId) {
         if (isValid) {
             // Private access - Editing your own snippet
-            console.log(validateUserAuthenticity(res.locals, id));
+            console.log(validateUserAuthenticity(res.locals, userId));
 
-            if (validateUserAuthenticity(res.locals, id)) {
+            if (validateUserAuthenticity(res.locals, userId)) {
                 console.log("You are who you are")
                 try {
-                    const snippet: any = await Snippet.findById(id).exec();
+                    const snippet: any = await Snippet.findById(snippetId).exec();
+                    snippet.author = author;
+                    snippet.title = title;
+                    snippet.description = description;
+                    snippet.code = code;
+                    snippet.isPrivate = isPrivate;
                     console.log('snippet:', snippet);
                     const successCallback = () => res.status(200).send('Updated snippet information');
                     const failureCallback = (err) => res.status(500).json(err);
