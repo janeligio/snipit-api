@@ -1,7 +1,11 @@
 import { Schema, model } from 'mongoose'
 
 const UserSchema = new Schema({
-    dateCreated: { type: Date, default: Date.now() },
+    dateCreated: {
+        alias: 'date',
+        type: Date,
+        default: Date.now(),
+    },
     username: {
         type: String,
         required: true,
@@ -12,7 +16,8 @@ const UserSchema = new Schema({
         type: String,
         minLength: 4,
         maxLength: 100,
-        required: true
+        required: true,
+        unique: true
     },
     password: {
         type: String,
@@ -25,6 +30,10 @@ const UserSchema = new Schema({
         minLength: 4,
         maxLength: 100,
     },
+    bio: {
+        type: String,
+        maxLength: 250
+    },
     info: {
         name: {
             type: String,
@@ -35,8 +44,6 @@ const UserSchema = new Schema({
             maxLength: 250
         }
     },
-    publicSnippets: [Schema.Types.ObjectId],
-    privateSnippets: [Schema.Types.ObjectId]
 })
 
 const User = model('User', UserSchema)
