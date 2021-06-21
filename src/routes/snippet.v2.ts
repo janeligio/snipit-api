@@ -13,11 +13,12 @@ function createSnippetGroup(data, success, failure) {
     const snippetIds = [];
     const succes = (id) => { snippetIds.push(id) };
 
-    _.forEach(snippets, (snip) => {
-        createSnippet(snip, succes, failure);
+    _.forEach(snippets, async (snip) => {
+        const snippet = await Snippet.create(snip);
+        snippetIds.push(snippet._id);
     });
 
-    const snippetGroup = new SnippetGroup({ isPrivate, title, snippetIds, userId });
+    const snippetGroup = new SnippetGroup({ isPrivate, title, snippets: snippetIds, userId });
 
     snippetGroup.save(err => {
         if (err) {
@@ -28,16 +29,25 @@ function createSnippetGroup(data, success, failure) {
     })
 }
 
-function createSnippet(data, success, failure) {
-    const snippet = new Snippet(data)
+async function createSnippet(data, success, failure) {
+    //const snippet = new Snippet(data);
+    const snippet = await Snippet.create(data);
+    const id = snippet._id;
+    success(id);
+    console.log(id);
 
+/*
     snippet.save(err => {
         if (err) {
+            console.log('fail');
             failure(err)
         } else {
-            success(snippet._id);
+            console.log('success');
+            success(id);
         }
     })
+*/
+    console.log('fin');
 }
 
 function editSnippetGroup(snippetGroup, success, failure) {
@@ -105,7 +115,7 @@ snippetRoutes.get('/:snippetGroupId', authenticateUser, async (req, res) => {
         try {
             const snippetGroup: any = await SnippetGroup.findById(snippetGroupId).exec();
 
-            if (snippetGroup.userId === auth.id) {
+            if (snippetGroup.userId == auth.id) {
                 res.json(snippetGroup);
             } else if (snippetGroup.private === false) {
                 res.json(snippetGroup);
@@ -161,7 +171,7 @@ snippetRoutes.delete('/delete/:snippetGroupId', authenticateUser, async (req, re
     if (snippetGroupId && auth) {
         try {
             const snippetGroup: any = await SnippetGroup.findById(snippetGroupId).exec();
-            if (snippetGroup.userId === auth.id) {
+            if (snippetGroup.userId == auth.id) {
                 // delete snippet
                 try {
                     const snippets = snippetGroup.snippets;
