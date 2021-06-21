@@ -1,9 +1,16 @@
 import { Schema, model } from 'mongoose'
+import { SnippetSchema } from './Snippet';
 
 const SnippetGroupSchema = new Schema({
     date: {
         type: Date,
         default: Date.now(),
+        required: true
+    },
+    private: {
+        alias: 'isPrivate',
+        type: Boolean,
+        default: false,
         required: true
     },
     updated: {
@@ -15,7 +22,7 @@ const SnippetGroupSchema = new Schema({
         trim: true
     },
     snippets: {
-        type: [Schema.Types.ObjectId],
+        type: [SnippetSchema],
         default: []
     },
     userId: {

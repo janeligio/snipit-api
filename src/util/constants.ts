@@ -2,6 +2,7 @@ export default {
     SCHEMAS: {
         USER: {
             USERNAME: {
+                MIN_LENGTH: 3,
                 MAX_LENGTH: 30
             },
             EMAIL: {

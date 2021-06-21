@@ -9,6 +9,7 @@ const UserSchema = new Schema({
     username: {
         type: String,
         required: true,
+        minLength: 3,
         maxLength: 30,
         unique: true
     },
@@ -35,6 +36,7 @@ const UserSchema = new Schema({
         maxLength: 250
     },
     info: {
+        // Deprecated
         name: {
             type: String,
             maxLength: 30

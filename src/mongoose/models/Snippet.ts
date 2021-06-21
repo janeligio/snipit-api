@@ -1,7 +1,7 @@
 import { Schema, model } from 'mongoose'
 import { languageOptions } from '../../util/snippetLanguages'
 
-const SnippetSchema = new Schema({
+export const SnippetSchema = new Schema({
     date: {
         type: Date,
         default: Date.now(),
