@@ -88,29 +88,59 @@ export async function validateSignup(email: string, password: string, confirmPas
 }
 
 export async function validateSnippet(snippet): Promise<ValidationMessage> {
-    const { title, description, code } = snippet;
+    const { author, title, description, code, isPrivate } = snippet;
+
     const message: ValidationMessage = {
         isValid: true,
         errors: undefined,
     };
 
-    // Validate title
-    if (title.length > 100) {
+    if (author !== undefined && author.length > 30) {
+        message.isValid = false;
+        message.errors = 'Author must be fewer than 100 characters';
+        return message;
+    }
+    
+    if (title !== undefined && title.length > 100) {
         message.isValid = false;
         message.errors = 'Title must be fewer than 100 characters';
         return message;
     }
 
-    if (description.length > 1000) {
+    if (description  !== undefined && description.length > 1000) {
         message.isValid = false;
         message.errors = 'Description must be fewer than 1000 characters';
         return message;
     }
 
-    if (code.length > 3000) {
+    if (code !== undefined && code.length> 3000) {
         message.isValid = false;
         message.errors = 'Code character count must be fewer than 3000 characters';
         return message;
+    }
+
+    if (isPrivate !== undefined && typeof(isPrivate) !== 'boolean') {
+        message.isValid = false;
+        message.errors = 'IsPrivate must be a boolean value';
+    }
+
+    return message;
+}
+
+export async function validateBio(name, bio): Promise<ValidationMessage> {
+    const message: ValidationMessage = {
+        isValid: true,
+        errors: undefined,
+    };
+
+    if (name.length > 30) {
+        message.isValid = false;
+        message.errors = 'Name must be fewer than 30 characters';
+    }
+
+    if (bio.length > 250) {
+        message.isValid = false;
+        message.errors = 'Bio must be fewer than 250 characters';
     }
 
     return message;

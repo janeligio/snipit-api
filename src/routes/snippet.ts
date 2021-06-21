@@ -1,3 +1,4 @@
+/* eslint-disable semi */
 import express from 'express'
 import { authenticateUser, validateUserAuthenticity } from '../middleware/authenticator'
 import { validateSnippet } from '../util/validation';
@@ -7,6 +8,16 @@ import Snippet from '../mongoose/models/Snippet'
 function createSnippet(data, success, failure) {
     const snippet = new Snippet(data)
 
+    snippet.save(err => {
+        if (err) {
+            failure(err)
+        } else {
+            success()
+        }
+    })
+}
+
+function editSnippet(snippet, success, failure) {
     snippet.save(err => {
         if (err) {
             failure(err)
@@ -33,7 +44,7 @@ router.get('/', async (req, res) => {
 })
 
 /**
- * @route GET /snippets/:snippetId
+ * @route GET /snippets/snippet/:snippetId
  * @description Get a specific snippet.
  * @access Public
  */
@@ -114,6 +125,49 @@ router.delete('/:snippetId', authenticateUser, async (req, res) => {
         } catch (err) {
             res.json({ error: 'Snippet does not exist.' })
         }
+    }
+})
+
+/**
+ * @route PUT /snippets/edit/:snippetId
+ * @description Edit a snippet
+ * @access Private
+ */
+ router.put('/edit/', authenticateUser, async (req, res) => {
+    const { id, author, title, description, code, tags, likes, isPrivate } = req.body;
+    //const { snippetId } = req.params;
+    const { snippetId, userId } = req.query;
+    console.log(typeof(isPrivate));
+    const { isValid, errors } = await validateSnippet({ author, title, description, code, isPrivate });
+    console.log(validateSnippet({ author, title, description, code, isPrivate }));
+
+    if (snippetId) {
+        if (isValid) {
+            // Private access - Editing your own snippet
+            console.log(validateUserAuthenticity(res.locals, userId));
+
+            if (validateUserAuthenticity(res.locals, userId)) {
+                console.log("You are who you are")
+                try {
+                    const snippet: any = await Snippet.findById(snippetId).exec();
+                    snippet.author = author;
+                    snippet.title = title;
+                    snippet.description = description;
+                    snippet.code = code;
+                    snippet.isPrivate = isPrivate;
+                    console.log('snippet:', snippet);
+                    const successCallback = () => res.status(200).send('Updated snippet information');
+                    const failureCallback = (err) => res.status(500).json(err);
+                    editSnippet(snippet, successCallback, failureCallback);
+                } catch (err) {
+                    res.status(404).json({ error: 'Snippet does not exist.' });
+                }
+            }
+        } else {
+            res.json({ error: errors });
+        }
+    } else {
+        res.json({ error: 'Must specify snippetid' });
     }
 })
 
