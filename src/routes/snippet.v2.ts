@@ -7,21 +7,28 @@ import Snippet from '../mongoose/models/Snippet'
 const snippetRoutes = express.Router()
 
 // Get all public snippets
-snippetRoutes.get('/all', (req, res) => { })
+snippetRoutes.get('/all', async (req, res) => { })
 
 // Get specific snippet
-snippetRoutes.get('/:snippetId', (req, res) => { })
+// Check if private field is true/false
+//  If user is owner of snippet, return snippet
+//  else return FORBIDDEN status code
+snippetRoutes.get('/:snippetId', async (req, res) => { })
+
 
 // Get someone's snippets
-snippetRoutes.get('/:userId', (req, res) => { })
+// 
+// snippetRoutes.get('/:userId', (req, res) => { })
 
 // Post a snippet - AUTHENTICATION REQUIRED
-snippetRoutes.post('/create', (req, res) => { })
+snippetRoutes.post('/create', authenticateUser, async (req, res) => { })
 
 // Delete a snippet - AUTHENTICATION & AUTHORIZATION REQUIRED
-snippetRoutes.delete('/delete', (req, res) => { })
+// First check if user is owner of snippet
+snippetRoutes.delete('/delete', authenticateUser, async (req, res) => { })
 
 // Edit a snippet - AUTHENTICATION & AUTHORIZATION REQUIRED
-snippetRoutes.put('/edit', (req, res) => { })
+// First check if user is owner of snippet
+snippetRoutes.put('/edit', authenticateUser, async (req, res) => { })
 
 export default snippetRoutes;
