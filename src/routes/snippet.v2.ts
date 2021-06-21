@@ -1,5 +1,5 @@
 import express from 'express'
-import { authenticateUser, validateUserAuthenticity } from '../middleware/authenticator'
+import { authenticateUser, authorizeUser } from '../middleware/authenticator'
 import { validateSnippet } from '../util/validation';
 import SnippetGroup from '../mongoose/models/SnippetGroup';
 import Snippet from '../mongoose/models/Snippet'

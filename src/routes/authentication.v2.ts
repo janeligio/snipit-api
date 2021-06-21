@@ -51,7 +51,11 @@ authRoutes.post('/login', async (req, res) => {
         if (username && typeof username === 'string' && username.length > 0) searchBy = { username };
         else if (email && typeof email === 'string' && email.length > 0) searchBy = { email };
 
+<<<<<<< HEAD
         const user: any = await User.findOne(searchBy, '_id password').exec();
+=======
+        const user: any = await User.findOne(searchBy, '_id username password').exec();
+>>>>>>> jan
         const matches = await bcrypt.compare(password, user.password);
         if (!matches) {
             res.status(400);
@@ -60,7 +64,11 @@ authRoutes.post('/login', async (req, res) => {
         } else {
             res.header('location', '/user/' + user._id);
             // This is what will authenticate a user
+<<<<<<< HEAD
             const payload = { id: user._id };
+=======
+            const payload = { id: user._id, username: user.username };
+>>>>>>> jan
             // Sign the token
             // Eventully token sessions will be recorded in a cache
             jwt.sign(payload, jwtSecret, { expiresIn: '7d' }, (err, token) => {

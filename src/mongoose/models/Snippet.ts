@@ -9,6 +9,7 @@ export const SnippetSchema = new Schema({
     },
     updated: { type: Date },
     isPrivate: {
+        // Deprecate
         type: Boolean,
         default: false,
         required: true
@@ -28,6 +29,7 @@ export const SnippetSchema = new Schema({
         trim: true
     },
     author: {
+        // Deprecate
         type: String
     },
     title: {
