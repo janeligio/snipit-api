@@ -1,22 +1,14 @@
 import express from 'express';
-<<<<<<< HEAD
-=======
 import _ from 'lodash';
->>>>>>> jan
 import { authenticateUser, authorizeUser } from '../middleware/authenticator';
 import User from '../mongoose/models/User';
 import SnippetGroup from '../mongoose/models/SnippetGroup';
+import Snippet from '../mongoose/models/Snippet';
 
 const userRoutes = express.Router();
 
 // Access user information (private) - AUTHENTICATION & AUTHORIZATION REQUIRED
 userRoutes.get('/private', authenticateUser, authorizeUser, async (req, res) => {
-<<<<<<< HEAD
-    const { id } = req.query;
-    const privateFields = 'date username email name bio';
-    try {
-        const user = await User.findById(id, privateFields).exec();
-=======
     const { id, username } = req.query;
 
     const privateFields = 'date username email name bio';
@@ -27,7 +19,6 @@ userRoutes.get('/private', authenticateUser, authorizeUser, async (req, res) => 
 
     try {
         const user = await User.findOne(searchBy, privateFields).exec();
->>>>>>> jan
 
         if (!user) {
             res.status(404).json({ error: 'User does not exist.' });
@@ -35,16 +26,11 @@ userRoutes.get('/private', authenticateUser, authorizeUser, async (req, res) => 
         }
 
         const snippetGroups = await SnippetGroup.find({ userId: id }).exec();
-<<<<<<< HEAD
-        res.status(200);
-        res.json({ user, snippets: snippetGroups });
-=======
 
         const mappedSnippetGroups = attachSnippets(snippetGroups);
 
         res.status(200);
         res.json({ user, snippets: mappedSnippetGroups });
->>>>>>> jan
         return;
     } catch (err) {
         res.status(500).json({ error: err });
@@ -76,11 +62,6 @@ userRoutes.get('/public/', async (req, res) => {
             return;
         }
 
-<<<<<<< HEAD
-        const snippetGroups = await User.find({ userId: user._id }, snippetFields).exec();
-        res.status(200);
-        res.json({ user, snippets: snippetGroups });
-=======
         const snippetGroups = await User.find({ userId: user._id, private: false }, snippetFields).exec();
 
         // Attach snippets to each snippet group
@@ -88,15 +69,12 @@ userRoutes.get('/public/', async (req, res) => {
 
         res.status(200);
         res.json({ user, snippets: mappedSnippetGroups });
->>>>>>> jan
         return;
     } catch (err) {
         res.status(500).json({ error: err });
         return;
     }
 })
-<<<<<<< HEAD
-=======
 
 
 // Attach snippets to each snippet group
@@ -113,7 +91,6 @@ function attachSnippets(snippetGroups) {
         })
 
         snippetGroup.snippets = snippets;
->>>>>>> jan
 
         return snippetGroup;
     });
