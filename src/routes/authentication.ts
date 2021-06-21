@@ -80,6 +80,12 @@ router.post('/login', async (req, res) => {
                 if (err) {
                     res.status(500).send({ error: 'Error authenticating' });
                 } else {
+                    // Note: Frontend & Backend must be on same domain for browser to set cookie.
+                    // In the future, allow cors not to be from * (any) origin but specific origins.
+                    // For development: allow from localhost:3000. For production, allow from whatever
+                    // domain frontend is hosted.
+                    res.cookie('jwt', `Bearer ${token}`, { httpOnly: true, maxAge: (60 * 60 * 24) });
+                    // res.setHeader('Set-Cookie', `jwt=Bearer ${token}; HttpOnly`);
                     res.status(200).json({
                         success: true,
                         token: `Bearer ${token}`

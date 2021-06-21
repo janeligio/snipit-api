@@ -3,6 +3,7 @@ import express from 'express';
 import { authenticateUser, validateUserAuthenticity } from '../middleware/authenticator';
 import { validateBio } from '../util/validation';
 import User from '../mongoose/models/User';
+import Snippet from '../mongoose/models/Snippet';
 
 const router = express.Router();
 
@@ -20,7 +21,7 @@ function edit(user, success, failure) {
 }
 
 /**
- * @route GET /user
+ * @route GET /user/?id=some-user's-id
  * @description Access user's information and snippets
  * @access Private
  */
@@ -53,22 +54,25 @@ router.get('/', authenticateUser, async (req, res) => {
 })
 
 /**
- * @route GET /user/:username
+
+ * @route GET /user/public/:username
  * @description Access another user's page, information and snippets
  * @access Public
  */
-router.get('/:email', async (req, res) => {
-    const { email } = req.params;
-    try {
-        const user = await User.findOne({ email }, publicFields).exec();
-        res.json(user);
-    } catch (err) {
-        res.json({ error: 'User does not exist.' })
-    }
-    if (email) {
+router.get('/public/:username', async (req, res) => {
+    const { username } = req.params;
+    console.log('hit')
+    if (username) {
 
     } else {
         res.json({ error: 'Must specify username' });
+    }
+    try {
+        const user = await User.findOne({ _id: username }, publicFields).exec();
+        const snippets = await Snippet.find({ owner: username }).exec();
+        res.json({ user, snippets });
+    } catch (err) {
+        res.json({ error: 'User does not exist.' })
     }
 })
 

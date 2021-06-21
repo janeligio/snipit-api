@@ -35,6 +35,7 @@ export function authenticateUser(req, res, next) {
             try {
                 const id = verifyToken(token);
                 res.locals.auth = { id };
+                console.log('User authenticated.');
                 next();
             } catch (err) {
                 return res.status(401).json({ message: 'UNAUTHORIZED' });
@@ -43,5 +44,23 @@ export function authenticateUser(req, res, next) {
             // No token
             return res.status(403).json({ error: 'FORBIDDEN' });
         }
+    }
+}
+
+export function authorizeUser(req, res, next) {
+    const { id } = req.query;
+
+    if (id && typeof id === 'string' && id.length > 0) {
+        if (validateUserAuthenticity(res.locals, id)) {
+            console.log('User authorized.')
+            next();
+        } else {
+            res.status(403).json({ error: 'FORBIDDEN' });
+            return;
+        }
+    } else {
+        res.status(400);
+        res.json({ errors: 'Must provide id query' });
+        return;
     }
 }
