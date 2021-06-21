@@ -93,31 +93,31 @@ export async function validateSnippet(snippet): Promise<ValidationMessage> {
         errors: undefined,
     };
 
-    if (author.length > 30) {
+    if (author !== undefined && author.length > 30) {
         message.isValid = false;
         message.errors = 'Author must be fewer than 100 characters';
         return message;
     }
     
-    if (title.length > 100) {
+    if (title !== undefined && title.length > 100) {
         message.isValid = false;
         message.errors = 'Title must be fewer than 100 characters';
         return message;
     }
 
-    if (description.length > 1000) {
+    if (description  !== undefined && description.length > 1000) {
         message.isValid = false;
         message.errors = 'Description must be fewer than 1000 characters';
         return message;
     }
 
-    if (code.length> 3000) {
+    if (code !== undefined && code.length> 3000) {
         message.isValid = false;
         message.errors = 'Code character count must be fewer than 3000 characters';
         return message;
     }
 
-    if (typeof(isPrivate) !== 'boolean') {
+    if (isPrivate !== undefined && typeof(isPrivate) !== 'boolean') {
         message.isValid = false;
         message.errors = 'IsPrivate must be a boolean value';
     }
