@@ -11,7 +11,6 @@ const SnippetGroupSchema = new Schema({
         alias: 'isPrivate',
         type: Boolean,
         default: false,
-        required: true
     },
     updated: {
         type: Date
@@ -21,8 +20,12 @@ const SnippetGroupSchema = new Schema({
         type: String,
         trim: true
     },
+    // snippets: {
+    //     type: [SnippetSchema],
+    //     default: []
+    // },
     snippets: {
-        type: [SnippetSchema],
+        type: [Schema.Types.ObjectId],
         default: []
     },
     userId: {

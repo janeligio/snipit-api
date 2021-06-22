@@ -12,16 +12,15 @@ export const SnippetSchema = new Schema({
         // Deprecate
         type: Boolean,
         default: false,
-        required: true
     },
     userId: {
         type: Schema.Types.ObjectId,
-        required: true
+        required: false
     },
     owner: {
         // Deprecated - use userId to find owner of snippet
         type: Schema.Types.ObjectId,
-        required: true
+        required: false
     },
     fileName: {
         type: String,
@@ -61,7 +60,6 @@ export const SnippetSchema = new Schema({
     tags: {
         // Deprecated - use language
         type: [String],
-        required: true
     },
     likes: {
         type: Number,

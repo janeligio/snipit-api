@@ -8,15 +8,23 @@ import Snippet from '../mongoose/models/Snippet'
 const snippetRoutes = express.Router()
 
 
-function createSnippetGroup(data, success, failure) {
+async function createSnippetGroup(data, success, failure) {
     const { isPrivate, title, snippets, userId } = data;
     const snippetIds = [];
     const succes = (id) => { snippetIds.push(id) };
 
-    _.forEach(snippets, async (snip) => {
-        const snippet = await Snippet.create(snip);
-        snippetIds.push(snippet._id);
-    });
+    try {
+        const snippetDocuments = await Snippet.create(snippets);
+        _.forEach(snippetDocuments, snippet => snippetIds.push(snippet.id));
+    } catch (err) {
+        failure(err)
+    }
+    console.log(snippetIds);
+    // _.forEach(snippets, async (snip) => {
+    //     const snippet = await Snippet.create(snip);
+    //     console.log(snippet);
+    //     snippetIds.push(snippet._id);
+    // });
 
     const snippetGroup = new SnippetGroup({ isPrivate, title, snippets: snippetIds, userId });
 
@@ -36,17 +44,17 @@ async function createSnippet(data, success, failure) {
     success(id);
     console.log(id);
 
-/*
-    snippet.save(err => {
-        if (err) {
-            console.log('fail');
-            failure(err)
-        } else {
-            console.log('success');
-            success(id);
-        }
-    })
-*/
+    /*
+        snippet.save(err => {
+            if (err) {
+                console.log('fail');
+                failure(err)
+            } else {
+                console.log('success');
+                success(id);
+            }
+        })
+    */
     console.log('fin');
 }
 
@@ -87,10 +95,10 @@ function editSnippet(snippet, data, failure) {
  * @description Get all public snippets
  * @access Public
  **/
-snippetRoutes.get('/all', async (req, res) => { 
+snippetRoutes.get('/all', async (req, res) => {
     console.log(req.headers.host);
     try {
-        const snippets = await SnippetGroup.find({private: false});
+        const snippets = await SnippetGroup.find({ private: false });
         res.status(200).send(snippets);
     } catch (err) {
         console.log(err);
@@ -107,7 +115,7 @@ snippetRoutes.get('/all', async (req, res) => {
  * @description Get a snippet group.
  * @access Public
  */
-snippetRoutes.get('/:snippetGroupId', authenticateUser, async (req, res) => { 
+snippetRoutes.get('/:snippetGroupId', authenticateUser, async (req, res) => {
     const { snippetGroupId } = req.params;
     const { auth } = res.locals;
 
@@ -124,10 +132,10 @@ snippetRoutes.get('/:snippetGroupId', authenticateUser, async (req, res) => {
                 res.status(403).json({ error: 'FORBIDDEN' });
             }
         } catch (err) {
-            res.json({error: 'Could not find snippet'});
+            res.json({ error: 'Could not find snippet' });
         }
     } else {
-        res.json({error: 'Must specify snippet group id'});
+        res.json({ error: 'Must specify snippet group id' });
     }
 })
 
@@ -141,18 +149,60 @@ snippetRoutes.get('/:snippetGroupId', authenticateUser, async (req, res) => {
  * @description Post a snippet
  * @access Private
  */
-snippetRoutes.post('/create', authenticateUser, async (req, res) => { 
+snippetRoutes.post('/create', authenticateUser, async (req, res) => {
     const { isPrivate, title, snippets, userId } = req.body;
-    console.log(req.body);
-    const { isValid, errors } = await validateSnippetGroup({ isPrivate, title, snippets, userId });
+    // console.log(req.body);
+
+    const { isValid, errors } = validateSnippetGroup({ isPrivate, title, snippets, userId });
 
     if (!isValid) {
         res.status(500).json({ error: errors });
-    } else {
-        const data = { isPrivate, title, snippets, userId };
-        const successCallback = () => res.status(200).send('Created snippet');
-        const failureCallback = (err) => res.status(500).json(err);
-        createSnippetGroup(data, successCallback, failureCallback);
+        return;
+    }
+    // const data = { isPrivate, title, snippets, userId };
+    // const successCallback = () => res.status(200).send('Created snippet');
+    // const failureCallback = (err) => res.status(500).json(err);
+    // createSnippetGroup(data, successCallback, failureCallback);
+
+    // Make sure each snippet is valid
+    _.forEach(snippets, snippet => {
+        const { isValid, errors } = validateSnippet(snippet);
+        if (!isValid) {
+            res.json({ errors });
+            return;
+        }
+    })
+
+    // Insert each snippet into db
+    let snippetDocuments;
+    let snippetIds;
+    try {
+        snippetDocuments = await Snippet.create(snippets);
+        snippetIds = _.map(snippetDocuments, '_id');  // Plucks _id and returns array
+    } catch (err) {
+        res.status(500).json({ errors: err });
+        return;
+    }
+
+    // _.forEach(snippetIds, sid => console.log(typeof sid))
+
+
+    // Insert snippet group into db with array of snippets
+    try {
+        const snippetGroupDocument = await SnippetGroup.create(
+            {
+                isPrivate,
+                title,
+                snippets: snippetIds,
+                userId
+            });
+        console.log(`Created snippet group #${snippetGroupDocument.id}`)
+        res.json({ success: true });
+        return;
+    } catch (err) {
+        console.log('Error: ', err);
+        res.status(500).json({ errors: err });
+        return;
     }
 })
 
@@ -176,12 +226,12 @@ snippetRoutes.delete('/delete/:snippetGroupId', authenticateUser, async (req, re
                 try {
                     const snippets = snippetGroup.snippets;
                     _.forEach(snippets, async (snip) => {
-                        await Snippet.deleteOne({_id: snip._id});
+                        await Snippet.deleteOne({ _id: snip._id });
                     })
-                    await SnippetGroup.deleteOne({_id: snippetGroupId});
+                    await SnippetGroup.deleteOne({ _id: snippetGroupId });
                     res.json({ message: `Successfully deleted snippet ${snippetGroupId}` });
                 } catch (err) {
-                    res.json({ error : err });
+                    res.json({ error: err });
                 }
             } else {
                 // If requester is not the owner of snippet group they are forbidden
@@ -191,7 +241,7 @@ snippetRoutes.delete('/delete/:snippetGroupId', authenticateUser, async (req, re
             res.json({ error: 'Snippet group does not exist' });
         }
     }
- })
+})
 
 // Edit a snippet - AUTHENTICATION & AUTHORIZATION REQUIRED
 // First check if user is owner of snippet
@@ -200,7 +250,7 @@ snippetRoutes.delete('/delete/:snippetGroupId', authenticateUser, async (req, re
  * @description Edit a snippet group
  * @access Private
  */
- snippetRoutes.put('/edit/:snippetGroupId', authenticateUser, async (req, res) => {
+snippetRoutes.put('/edit/:snippetGroupId', authenticateUser, async (req, res) => {
     const { isPrivate, title, snippets, userId } = req.body;
     const { snippetGroupId } = req.params;
 

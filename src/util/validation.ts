@@ -88,37 +88,39 @@ export async function validateSignup(email: string, password: string, confirmPas
     return message;
 }
 
-export async function validateSnippetGroup(snippetGroup): Promise<ValidationMessage> {
+export function validateSnippetGroup(snippetGroup): ValidationMessage {
     const { isPrivate, title, snippets } = snippetGroup;
 
     const message: ValidationMessage = {
         isValid: true,
         errors: undefined,
     };
-    
-    if (isPrivate !== undefined && typeof(isPrivate) !== 'boolean') {
+
+    if (isPrivate !== undefined && typeof (isPrivate) !== 'boolean') {
         message.isValid = false;
-        message.errors = 'IsPrivate must be a boolean value';
+        message.errors = 'isPrivate must be a boolean value';
+        return message;
     }
-    
-    if (title !== undefined && title.length > 100) {
+
+    if (typeof title !== 'string' && title.length > 100) {
         message.isValid = false;
         message.errors = 'Title must be fewer than 100 characters';
         return message;
     }
 
-    _.forEach(snippets, async (snip) => {
-        const {isValid, errors} = await validateSnippet(snip);
-        if (!isValid) {
-            message.isValid = isValid;
-            message.errors = errors;
-        }
-    });
+    // _.forEach(snippets, async (snippet) => {
+    //     const { isValid, errors } = await validateSnippet(snippet);
+    //     if (!isValid) {
+    //         message.isValid = isValid;
+    //         message.errors = errors;
+    //         return message;
+    //     }
+    // });
 
     return message;
 }
 
-export async function validateSnippet(snippet): Promise<ValidationMessage> {
+export function validateSnippet(snippet): ValidationMessage {
     const { fileName, title, description, code, language, order } = snippet;
 
     const message: ValidationMessage = {
@@ -156,7 +158,7 @@ export async function validateSnippet(snippet): Promise<ValidationMessage> {
         return message;
     }
 
-    if (order !== undefined && typeof(order) !== 'number') {
+    if (order !== undefined && typeof (order) !== 'number') {
         message.isValid = false;
         message.errors = 'Order must be a number';
         return message;
