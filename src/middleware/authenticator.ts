@@ -11,15 +11,22 @@ function getBearerTokenFromAuthHeader(authHeader: string): string {
 function verifyToken(token) {
     try {
         const decodedToken = jwt.verify(token, jwtSecret);
-        return decodedToken.id;
+        return { id: decodedToken.id, username: decodedToken.username };
     } catch (err) {
         return err;
     }
 }
 
 export function validateUserAuthenticity(locals, id) {
-    console.log(locals);
     return locals.auth && locals.auth.id && id === locals.auth.id;
+}
+
+export function validateUserAuthenticityId(locals, id) {
+    return locals.auth && locals.auth.id && id === locals.auth.id;
+}
+
+export function validateUserAuthenticityUsername(locals, username) {
+    return locals.auth && locals.auth.username && username === locals.auth.username;
 }
 
 export function authenticateUser(req, res, next) {
@@ -33,8 +40,9 @@ export function authenticateUser(req, res, next) {
 
         if (token) {
             try {
-                const id = verifyToken(token);
-                res.locals.auth = { id };
+                const { id, username } = verifyToken(token);
+                res.locals.auth = { id, username };
+                console.log('Set res.locals.auth to: ', res.locals.auth);
                 console.log('User authenticated.');
                 next();
             } catch (err) {
@@ -48,10 +56,18 @@ export function authenticateUser(req, res, next) {
 }
 
 export function authorizeUser(req, res, next) {
-    const { id } = req.query;
+    const { id, username } = req.query;
 
-    if (id && typeof id === 'string' && id.length > 0) {
-        if (validateUserAuthenticity(res.locals, id)) {
+    if (username && typeof username === 'string' && username.length > 0) {
+        if (validateUserAuthenticityUsername(res.locals, username)) {
+            console.log('User authorized.')
+            next();
+        } else {
+            res.status(403).json({ error: 'FORBIDDEN' });
+            return;
+        }
+    } else if (id && typeof id === 'string' && id.length > 0) {
+        if (validateUserAuthenticityId(res.locals, id)) {
             console.log('User authorized.')
             next();
         } else {
@@ -60,7 +76,7 @@ export function authorizeUser(req, res, next) {
         }
     } else {
         res.status(400);
-        res.json({ errors: 'Must provide id query' });
+        res.json({ errors: 'Must provide id or username query' });
         return;
     }
 }
