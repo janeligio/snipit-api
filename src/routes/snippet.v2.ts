@@ -122,7 +122,7 @@ snippetRoutes.get('/:snippetGroupId', authenticateUser, async (req, res) => {
     if (snippetGroupId) {
         try {
             const snippetGroup: any = await SnippetGroup.findById(snippetGroupId).exec();
-
+            // fetch each snippet that the group uses and return them along with the group
             if (snippetGroup.userId == auth.id) {
                 res.json(snippetGroup);
             } else if (snippetGroup.private === false) {
@@ -136,6 +136,36 @@ snippetRoutes.get('/:snippetGroupId', authenticateUser, async (req, res) => {
         }
     } else {
         res.json({ error: 'Must specify snippet group id' });
+    }
+})
+
+// either have this or do something like on line 125
+/**
+ * @route GET /api/v2/snippets/snippet/:snippetId
+ * @description Get a single snippet.
+ * @access Public
+ */
+ snippetRoutes.get('/snippet/:snippetId', authenticateUser, async (req, res) => {
+    const { snippetId } = req.params;
+    const { auth } = res.locals;
+
+    if (snippetId) {
+        try {
+            const snippet: any = await Snippet.findById(snippetId).exec();
+
+            if (snippet.userId == auth.id) {
+                res.json(snippet);
+            } else if (snippet.private === false) {
+                res.json(snippet);
+            } else {
+                // If requester is not the owner of the snippet and snippet is private they are forbidden
+                res.status(403).json({ error: 'FORBIDDEN' });
+            }
+        } catch (err) {
+            res.json({ error: 'Could not find snippet' });
+        }
+    } else {
+        res.json({ error: 'Must specify snippet id' });
     }
 })
 
