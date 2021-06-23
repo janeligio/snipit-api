@@ -169,8 +169,7 @@ snippetRoutes.get('/snippet/:snippetId', authenticateUser, async (req, res) => {
     }
 })
 
-// Get someone's snippets
-// 
+
 // snippetRoutes.get('/:userId', (req, res) => { })
 
 // Post a snippet - AUTHENTICATION REQUIRED
@@ -180,64 +179,56 @@ snippetRoutes.get('/snippet/:snippetId', authenticateUser, async (req, res) => {
  * @access Private
  */
 snippetRoutes.post('/create', authenticateUser, async (req, res) => {
-    const { isPrivate, title, snippets } = req.body;
-    // console.log(req.body);
+    const { hidden, title, description, tags, snippets } = req.body;
     const userId = res.locals.auth.id;
     if (!userId) {
         res.status(400).json({ errors: 'Invalid user id' });
     }
 
-    const { isValid, errors } = validateSnippetGroup({ isPrivate, title, snippets, userId });
+    const { isValid, errors } = validateSnippetGroup({ hidden, title, snippets, userId });
 
     if (!isValid) {
         res.status(500).json({ error: errors });
         return;
     }
-    // const data = { isPrivate, title, snippets, userId };
-    // const successCallback = () => res.status(200).send('Created snippet');
-    // const failureCallback = (err) => res.status(500).json(err);
-    // createSnippetGroup(data, successCallback, failureCallback);
 
     // Make sure each snippet is valid
-    _.forEach(snippets, snippet => {
-        const { isValid, errors } = validateSnippet(snippet);
-        if (!isValid) {
-            res.json({ errors });
-            return;
-        }
-    })
+    // _.forEach(snippets, snippet => {
+    //     const { isValid, errors } = validateSnippet(snippet);
+    //     if (!isValid) {
+    //         res.json({ errors });
+    //         return;
+    //     }
+    // })
 
-    // Insert each snippet into db
-    let snippetDocuments;
-    let snippetIds;
+    // Insert snippetGroup into db
+    let snippetGroup;
+
     try {
-        snippetDocuments = await Snippet.create(snippets);
-        snippetIds = _.map(snippetDocuments, '_id');  // Plucks _id and returns array
+        snippetGroup = await SnippetGroup.create({ hidden, title, description, userId, tags });
     } catch (err) {
         res.status(500).json({ errors: err });
         return;
     }
 
-    // _.forEach(snippetIds, sid => console.log(typeof sid))
+    const snippetGroupId = snippetGroup._id.toString();
 
+    // Insert each snippet into db
+    const snippetsToInsert = _.map(snippets, (snippet) => {
+        snippet.userId = userId;
+        snippet.snippetGroupId = snippetGroupId;
+        return snippet;
+    });
 
-    // Insert snippet group into db with array of snippets
     try {
-        const snippetGroupDocument = await SnippetGroup.create(
-            {
-                isPrivate,
-                title,
-                snippets: snippetIds,
-                userId
-            });
-        console.log(`Created snippet group #${snippetGroupDocument.id}`)
-        res.json({ success: true });
-        return;
+        await Snippet.create(snippetsToInsert);
     } catch (err) {
         console.log('Error: ', err);
         res.status(500).json({ errors: err });
         return;
     }
+
+    res.json({ success: true });
 })
 
 // Delete a snippet - AUTHENTICATION & AUTHORIZATION REQUIRED
