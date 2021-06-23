@@ -24,26 +24,22 @@ userRoutes.get('/private', authenticateUser, authorizeUser, async (req, res) => 
             return;
         }
 
-        const snippetGroups = await SnippetGroup.find({ userId: id }).exec();
-        // const snippetGroupIds = _.map(snippetGroups, '_id');
+        const snippetGroups: any = await SnippetGroup.find({ userId: id }).exec();
 
-        async function getSnippets(snippetGroupId) {
-            const sgid = typeof snippetGroupId === 'string'
-                ? snippetGroupId
-                : snippetGroupId.toString();
+        const snippetGroupsMappedToSnippets = [];
+        for (let i = 0; i < snippetGroups.length; i++) {
+            const snippetGroupId = snippetGroups[i]._id.toString();
 
-            const snippets = await Snippet.find({ snippetGroupId: sgid });
-            return snippets;
+            const snippetGroupMapped = { ...snippetGroups[i]._doc };
+            const snippets = await Snippet.find({ snippetGroupId }).exec();
+            snippetGroupMapped.snippets = snippets;
+
+            snippetGroupsMappedToSnippets.push(snippetGroupMapped);
         }
-
-        _.forEach(snippetGroups, async (snippetGroup) => {
-            const snippetGroupId = snippetGroup._id.toString();
-            const snippets = await getSnippets(snippetGroupId);
-            snippetGroup.snippets = snippets;
-        })
+        console.log(snippetGroupsMappedToSnippets);
 
         res.status(200);
-        res.json({ user, snippets: snippetGroups });
+        res.json({ user, snippets: snippetGroupsMappedToSnippets });
         return;
     } catch (err) {
         res.status(500).json({ error: err });
