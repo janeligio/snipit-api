@@ -21,7 +21,20 @@ authRoutes.post('/register', async (req, res) => {
         const saltRounds = 10;
         const hash = await bcrypt.hash(password, saltRounds);
         try {
-            await User.create({ username, email, password: hash });
+            const user: any = await User.create({ username, email, password: hash });
+            const payload = { id: user._id, username };
+            jwt.sign(payload, jwtSecret, { expiresIn: '7d' }, (err, token) => {
+                if (err) {
+                    res.status(500).json({ error: 'Error authenticating' });
+                    return;
+                } else {
+                    res.status(200).json({
+                        success: true,
+                        token: `Bearer ${token}`
+                    });
+                    return;
+                }
+            });
         } catch (err) {
             console.error('Error creating user: ', err);
             res.status(500);
