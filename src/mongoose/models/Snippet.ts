@@ -5,31 +5,24 @@ export const SnippetSchema = new Schema({
     date: {
         type: Date,
         default: Date.now(),
-        required: true
     },
-    updated: { type: Date },
-    isPrivate: {
-        // Deprecate
-        type: Boolean,
-        default: false,
+    updated: {
+        type: Date
     },
     userId: {
+        // The owner of this snippet, used to verify if user has permission
         type: Schema.Types.ObjectId,
-        required: false
+        required: true
     },
-    owner: {
-        // Deprecated - use userId to find owner of snippet
+    snippetGroupId: {
+        // Maps the relationship to its snippet group
         type: Schema.Types.ObjectId,
-        required: false
+        required: true
     },
     fileName: {
         type: String,
         maxLength: 50,
         trim: true
-    },
-    author: {
-        // Deprecate
-        type: String
     },
     title: {
         maxLength: 100,
@@ -56,10 +49,6 @@ export const SnippetSchema = new Schema({
         type: Number,
         required: true,
         default: 1
-    },
-    tags: {
-        // Deprecated - use language
-        type: [String],
     },
     likes: {
         type: Number,

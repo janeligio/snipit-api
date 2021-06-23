@@ -5,33 +5,32 @@ const SnippetGroupSchema = new Schema({
     date: {
         type: Date,
         default: Date.now(),
-        required: true
-    },
-    private: {
-        alias: 'isPrivate',
-        type: Boolean,
-        default: false,
     },
     updated: {
         type: Date
+    },
+    hidden: {
+        type: Boolean,
+        default: false,
     },
     title: {
         maxLength: 100,
         type: String,
         trim: true
     },
-    // snippets: {
-    //     type: [SnippetSchema],
-    //     default: []
-    // },
-    snippets: {
-        type: [Schema.Types.ObjectId],
-        default: []
+    description: {
+        maxLength: 1000,
+        type: String,
+        trim: true
     },
     userId: {
         type: Schema.Types.ObjectId,
         required: true
-    }
+    },
+    tags: {
+        // Will include things like languages and topics
+        type: [String],
+    },
 });
 
 const SnippetGroup = model('SnippetGroup', SnippetGroupSchema)

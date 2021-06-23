@@ -11,12 +11,11 @@ const userRoutes = express.Router();
 userRoutes.get('/private', authenticateUser, authorizeUser, async (req, res) => {
     const { id, username } = req.query;
 
-    const privateFields = 'date username email name bio';
+    const privateFields = '_id date username email name bio';
 
     let searchBy;
     if (username) searchBy = { username }
     else searchBy = { _id: id }
-
     try {
         const user = await User.findOne(searchBy, privateFields).exec();
 
@@ -25,10 +24,11 @@ userRoutes.get('/private', authenticateUser, authorizeUser, async (req, res) => 
             return;
         }
 
-        const snippetGroups = await SnippetGroup.find({ userId: id }).exec();
-
+        // console.log(typeof user._id.toString());
+        const snippetGroups = await SnippetGroup.find({ userId: user._id.toString() }).exec();
+        // console.log(snippetGroups);
         const mappedSnippetGroups = attachSnippets(snippetGroups);
-
+        // console.log(mappedSnippetGroups);
         res.status(200);
         res.json({ user, snippets: mappedSnippetGroups });
         return;
@@ -78,22 +78,30 @@ userRoutes.get('/public/', async (req, res) => {
 
 
 // Attach snippets to each snippet group
-function attachSnippets(snippetGroups) {
+async function attachSnippets(snippetGroups) {
 
-    const mappedSnippetGroups = _.map(snippetGroups, (snippetGroup) => {
+    const mappedSnippetGroupsPromises = _.map(snippetGroups, async (snippetGroup) => {
 
         const snippetIds = snippetGroup.snippets;
-        const snippets = [];
+        console.log(snippetIds);
+        const findSnippet = (snippetId) => Snippet.findById(snippetId).exec();
+        const snippetPromises = _.map(snippetIds, findSnippet);
+        const snippets = await Promise.all(snippetPromises);
 
-        _.forEach(snippetIds, async (id) => {
-            const snippet = await Snippet.findById(id).exec();
-            if (snippet) snippets.push(snippet);
-        })
+        // _.forEach(snippetIds, async (id) => {
+        //     const snippet = await Snippet.findById(id).exec();
+        //     console.log(snippet);
+        //     if (snippet) snippets.push(snippet);
+        // })
 
         snippetGroup.snippets = snippets;
 
         return snippetGroup;
     });
-    return mappedSnippetGroups;
+
+
+    console.log('***********************')
+    console.log(mappedSnippetGroupsPromises);
+    return await Promise.all(mappedSnippetGroupsPromises).then(group => console.log(group));
 }
 export default userRoutes;

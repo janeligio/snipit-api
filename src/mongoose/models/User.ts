@@ -1,10 +1,12 @@
 import { Schema, model } from 'mongoose'
 
 const UserSchema = new Schema({
-    dateCreated: {
-        alias: 'date',
+    date: {
         type: Date,
         default: Date.now(),
+    },
+    updated: {
+        type: Date
     },
     username: {
         type: String,

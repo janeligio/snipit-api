@@ -145,7 +145,7 @@ snippetRoutes.get('/:snippetGroupId', authenticateUser, async (req, res) => {
  * @description Get a single snippet.
  * @access Public
  */
- snippetRoutes.get('/snippet/:snippetId', authenticateUser, async (req, res) => {
+snippetRoutes.get('/snippet/:snippetId', authenticateUser, async (req, res) => {
     const { snippetId } = req.params;
     const { auth } = res.locals;
 
@@ -180,8 +180,12 @@ snippetRoutes.get('/:snippetGroupId', authenticateUser, async (req, res) => {
  * @access Private
  */
 snippetRoutes.post('/create', authenticateUser, async (req, res) => {
-    const { isPrivate, title, snippets, userId } = req.body;
+    const { isPrivate, title, snippets } = req.body;
     // console.log(req.body);
+    const userId = res.locals.auth.id;
+    if (!userId) {
+        res.status(400).json({ errors: 'Invalid user id' });
+    }
 
     const { isValid, errors } = validateSnippetGroup({ isPrivate, title, snippets, userId });
 
