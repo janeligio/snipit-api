@@ -22,12 +22,20 @@ authRoutes.post('/register', async (req, res) => {
         const hash = await bcrypt.hash(password, saltRounds);
         try {
             const user: any = await User.create({ username, email, password: hash });
+            console.log(user);
             const payload = { id: user._id, username };
             jwt.sign(payload, jwtSecret, { expiresIn: '7d' }, (err, token) => {
                 if (err) {
                     res.status(500).json({ error: 'Error authenticating' });
                     return;
                 } else {
+                    console.log('Sending back: ', {
+                        success: true,
+                        token: `Bearer ${token}`
+                    });
+
+                    const redirect = req.headers.host + '/login';
+                    res.header('location', redirect);
                     res.status(200).json({
                         success: true,
                         token: `Bearer ${token}`
@@ -43,10 +51,6 @@ authRoutes.post('/register', async (req, res) => {
         }
     }
 
-    const redirect = req.headers.host + '/login';
-    res.status(200);
-    res.header('location', redirect);
-    res.end();
 });
 
 authRoutes.post('/login', async (req, res) => {
