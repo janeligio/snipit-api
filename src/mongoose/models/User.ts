@@ -37,17 +37,6 @@ const UserSchema = new Schema({
         type: String,
         maxLength: 250
     },
-    info: {
-        // Deprecated
-        name: {
-            type: String,
-            maxLength: 30
-        },
-        bio: {
-            type: String,
-            maxLength: 250
-        }
-    },
 })
 
 const User = model('User', UserSchema)
