@@ -1,4 +1,5 @@
 import EmailValidator from 'email-validator';
+import _ from 'lodash';
 import PasswordSchema, { PasswordRules } from '../config/validationConfig';
 import User from '../mongoose/models/User';
 import CONSTANTS from '../util/constants';
@@ -87,41 +88,80 @@ export async function validateSignup(email: string, password: string, confirmPas
     return message;
 }
 
-export async function validateSnippet(snippet): Promise<ValidationMessage> {
-    const { author, title, description, code, isPrivate } = snippet;
+export function validateSnippetGroup(snippetGroup): ValidationMessage {
+    const { isPrivate, title, snippets } = snippetGroup;
 
     const message: ValidationMessage = {
         isValid: true,
         errors: undefined,
     };
 
-    if (author !== undefined && author.length > 30) {
+    if (isPrivate !== undefined && typeof (isPrivate) !== 'boolean') {
         message.isValid = false;
-        message.errors = 'Author must be fewer than 100 characters';
+        message.errors = 'isPrivate must be a boolean value';
         return message;
     }
-    
+
+    if (typeof title !== 'string' && title.length > 100) {
+        message.isValid = false;
+        message.errors = 'Title must be fewer than 100 characters';
+        return message;
+    }
+
+    // _.forEach(snippets, async (snippet) => {
+    //     const { isValid, errors } = await validateSnippet(snippet);
+    //     if (!isValid) {
+    //         message.isValid = isValid;
+    //         message.errors = errors;
+    //         return message;
+    //     }
+    // });
+
+    return message;
+}
+
+export function validateSnippet(snippet): ValidationMessage {
+    const { fileName, title, description, code, language, order } = snippet;
+
+    const message: ValidationMessage = {
+        isValid: true,
+        errors: undefined,
+    };
+
+    if (fileName !== undefined && fileName.length > 50) {
+        message.isValid = false;
+        message.errors = 'Filename character count must be fewer than 50 characters';
+        return message;
+    }
+
     if (title !== undefined && title.length > 100) {
         message.isValid = false;
         message.errors = 'Title must be fewer than 100 characters';
         return message;
     }
 
-    if (description  !== undefined && description.length > 1000) {
+    if (description !== undefined && description.length > 1000) {
         message.isValid = false;
         message.errors = 'Description must be fewer than 1000 characters';
         return message;
     }
 
-    if (code !== undefined && code.length> 3000) {
+    if (code !== undefined && code.length > 3000) {
         message.isValid = false;
         message.errors = 'Code character count must be fewer than 3000 characters';
         return message;
     }
 
-    if (isPrivate !== undefined && typeof(isPrivate) !== 'boolean') {
+    if (language !== undefined && language.length < 1) {
         message.isValid = false;
-        message.errors = 'IsPrivate must be a boolean value';
+        message.errors = 'Language options must be present';
+        return message;
+    }
+
+    if (order !== undefined && typeof (order) !== 'number') {
+        message.isValid = false;
+        message.errors = 'Order must be a number';
+        return message;
     }
 
     return message;
