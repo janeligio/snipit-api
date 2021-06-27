@@ -173,7 +173,7 @@ export async function validateBio(name, bio): Promise<ValidationMessage> {
         errors: undefined,
     };
 
-    if (name.length > 30) {
+    if (name.length > 100 || name.length < 4) {
         message.isValid = false;
         message.errors = 'Name must be fewer than 30 characters';
     }

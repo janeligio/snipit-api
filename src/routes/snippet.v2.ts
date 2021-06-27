@@ -98,7 +98,7 @@ function editSnippet(snippet, data, failure) {
 snippetRoutes.get('/all', async (req, res) => {
     console.log(req.headers.host);
     try {
-        const snippets = await SnippetGroup.find({ private: false });
+        const snippets = await SnippetGroup.find({ hidden: false });
         res.status(200).send(snippets);
     } catch (err) {
         console.log(err);

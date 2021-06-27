@@ -1,6 +1,7 @@
 import express from 'express';
 import _ from 'lodash';
 import { authenticateUser, authorizeUser } from '../middleware/authenticator';
+import { validateBio } from '../util/validation';
 import User from '../mongoose/models/User';
 import SnippetGroup from '../mongoose/models/SnippetGroup';
 import Snippet from '../mongoose/models/Snippet';
@@ -94,6 +95,45 @@ userRoutes.get('/public/', async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: err });
         return;
+    }
+})
+
+
+/**
+ * @route POST /api/v2/user/edit/?(id=userId)|(?username=username)
+ * @description Edit user information, name bio (private) - AUTHENTICATION & AUTHORIZATION REQUIRED
+ * @access Private
+ */
+ userRoutes.post('/edit', authenticateUser, authorizeUser, async (req, res) => {
+    const { name, bio } = req.body;
+    const { id } = res.locals.auth;
+
+    const { isValid, errors } = await validateBio(name, bio);
+    const user: any = await User.findById(id).exec();
+
+    if (id) {
+        if (isValid) {
+            if (user) {
+                try {
+                    user.name = name;
+                    user.bio = bio;
+
+                    await user.save();
+                    res.status(200);
+                    res.json({ user });
+                    return;
+                } catch (err) {
+                    res.status(500).json({ error: err });
+                    return;
+                }
+            } else {
+                res.status(404).json({ error: 'User does not exist. '});
+            }
+        } else {
+            res.json({error: errors});
+        }
+    } else {
+        res.json({error: 'Must specify id'});
     }
 })
 
