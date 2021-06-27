@@ -268,6 +268,43 @@ snippetRoutes.delete('/delete/:snippetGroupId', authenticateUser, async (req, re
     }
 })
 
+
+/**
+ * @route PUT /api/v2/snippets/edit/private/?(id=userId)|(?username=username)
+ * @description Mark a snippet group hidden or not
+ * @access Private
+ */
+ snippetRoutes.put('/edit/private/', authenticateUser, authorizeUser, async (req, res) => {
+    const { hidden, snippetGroupId } = req.body;
+    const { username } = res.locals.auth;
+    console.log(res.locals.auth);
+
+    if (snippetGroupId) {
+        if (typeof hidden === 'boolean') {
+            if (username) {
+                console.log("You are who you are")
+                try {
+                    const snippetGroup: any = await SnippetGroup.findById(snippetGroupId).exec();
+                    snippetGroup.hidden = hidden;
+                    snippetGroup.updated = Date.now();
+                    console.log('snippetGroup:', snippetGroup);
+                    snippetGroup.save();
+                    res.status(200).json("Snippet group updated");
+                } catch (err) {
+                    res.status(404).json({ error: 'Snippet group does not exist.' });
+                }
+            } else {
+                res.json({ error: "Must provide userId" });
+            }
+        } else {
+            res.json({ error: "Must provide boolean" });
+        }
+    } else {
+        res.json({ error: 'Must specify snippetGroupId' });
+    }
+})
+
+
 // Edit a snippet - AUTHENTICATION & AUTHORIZATION REQUIRED
 // First check if user is owner of snippet
 /**
