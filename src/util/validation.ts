@@ -89,16 +89,16 @@ export async function validateSignup(email: string, password: string, confirmPas
 }
 
 export function validateSnippetGroup(snippetGroup): ValidationMessage {
-    const { isPrivate, title, snippets } = snippetGroup;
+    const { hidden, title, description, tags, snippets } = snippetGroup;
 
     const message: ValidationMessage = {
         isValid: true,
         errors: undefined,
     };
 
-    if (isPrivate !== undefined && typeof (isPrivate) !== 'boolean') {
+    if (hidden !== undefined && typeof (hidden) !== 'boolean') {
         message.isValid = false;
-        message.errors = 'isPrivate must be a boolean value';
+        message.errors = 'Hidden must be a boolean value';
         return message;
     }
 

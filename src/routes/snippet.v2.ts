@@ -3,7 +3,8 @@ import _ from 'lodash';
 import { authenticateUser, authorizeUser, validateUserAuthenticity } from '../middleware/authenticator'
 import { validateSnippet, validateSnippetGroup } from '../util/validation';
 import SnippetGroup from '../mongoose/models/SnippetGroup';
-import Snippet from '../mongoose/models/Snippet'
+import Snippet from '../mongoose/models/Snippet';
+import User from '../mongoose/models/User';
 
 const snippetRoutes = express.Router()
 
@@ -123,6 +124,58 @@ snippetRoutes.get('/all', async (req, res) => {
     }
 })
 
+/**
+ * @route GET /api/v2/snippets/user/:username
+ * @description Get a users snippets.
+ * @access Public
+ */
+snippetRoutes.get('/user/:username', authenticateUser, async (req, res) => {
+    const { username } = req.params;
+    const { auth } = res.locals;
+
+    const user: any = await User.find({username}).exec();
+
+    if (username) {
+        if (user) {
+            if (username == auth.username) {
+                try {
+                    const snippetGroups: any = await SnippetGroup.find({userId: auth.id}).exec();
+                    /*try {
+                        _.forEach(snippetGroups, async (group) => {
+                            group.snips = await Snippet.find({snippetGroupId: group._id}).exec();
+                            //console.log(group.snips);
+                        });
+                        console.log(snippetGroups);
+                    } catch {
+                        console.log('oppsie');
+                    }*/
+                    
+                    /*const ret = _.map(snippetGroups, async (group) => {
+                        const groupSnips = group;
+                        group.snips = await Snippet.find({snippetGroupId: group._id}).exec();
+                        return groupSnips;
+                    });*/
+
+                    console.log(snippetGroups);
+                    res.json(snippetGroups);
+                } catch (err) {
+                    res.json({ error: 'Could not find snippet group' });
+                }
+            } else {    // not your account
+                try {
+                    const snippetGroups: any = await SnippetGroup.find({userId: user._id, hidden: false}).exec();
+                    res.json(snippetGroups);
+                } catch (err) {
+                    res.json({ error: 'Could not find snippets' })
+                }
+            }
+        } else {
+            res.json({ error: 'User does not exist' });
+        }
+    } else {
+        res.json({ error: 'Must specify a username' });
+    }
+})
 
 // Get specific snippet
 // Check if private field is true/false
@@ -190,8 +243,6 @@ snippetRoutes.get('/snippet/:snippetId', authenticateUser, async (req, res) => {
 })
 
 
-// snippetRoutes.get('/:userId', (req, res) => { })
-
 // Post a snippet - AUTHENTICATION REQUIRED
 /**
  * @route POST /api/v2/snippets/create
@@ -201,11 +252,12 @@ snippetRoutes.get('/snippet/:snippetId', authenticateUser, async (req, res) => {
 snippetRoutes.post('/create', authenticateUser, async (req, res) => {
     const { hidden, title, description, tags, snippets } = req.body;
     const userId = res.locals.auth.id;
+    
     if (!userId) {
         res.status(400).json({ errors: 'Invalid user id' });
     }
 
-    const { isValid, errors } = validateSnippetGroup({ hidden, title, snippets, userId });
+    const { isValid, errors } = validateSnippetGroup({ hidden, title, description, tags, snippets });
 
     if (!isValid) {
         res.status(500).json({ error: errors });
@@ -360,39 +412,49 @@ snippetRoutes.delete('/delete/', authenticateUser, authorizeUser, async (req, re
 })
 
 
-// Edit a snippet - AUTHENTICATION & AUTHORIZATION REQUIRED
-// First check if user is owner of snippet
 /**
  * @route PUT /api/v2/snippets/edit/:snippetGroupId
- * @description Edit a snippet group
+ * @description Edit a snippet group and its snippets
  * @access Private
  */
-snippetRoutes.put('/edit/:snippetGroupId', authenticateUser, async (req, res) => {
-    const { isPrivate, title, snippets, userId } = req.body;
+/*
+snippetRoutes.put('/edit/:snippetGroupId', authenticateUser, authorizeUser, async (req, res) => {
+    const { group, snippets } = req.body;
     const { snippetGroupId } = req.params;
+    const { id } = res.locals.auth;
 
-    const { isValid, errors } = await validateSnippetGroup({ isPrivate, title, snippets, userId });
-
-    console.log(validateSnippet({ isPrivate, title, snippets, userId }));
+    const { isValid, errors } = await validateSnippetGroup(group);
+    // validate snippets
 
     if (snippetGroupId) {
         if (isValid) {
-            // Private access - Editing your own snippet
-            console.log(validateUserAuthenticity(res.locals, userId));
-
-            if (validateUserAuthenticity(res.locals, userId)) {
-                console.log("You are who you are")
+            if (id === group.userId) {
                 try {
                     const snippetGroup: any = await SnippetGroup.findById(snippetGroupId).exec();
-                    snippetGroup.isPrivate = isPrivate;
-                    snippetGroup.title = title;
+                    snippetGroup.title = group.title;
+                    snippetGroup.description = group.description;
+                    snippetGroup.tags = group.tags;
                     snippetGroup.updated = Date.now();
                     console.log('snippetGroup:', snippetGroup);
-                    const successCallback = () => res.status(200).send('Updated snippet information');
-                    const failureCallback = (err) => res.status(500).json(err);
-                    editSnippetGroup(snippetGroup, successCallback, failureCallback);
+                    //const successCallback = () => res.status(200).send('Updated snippet information');
+                    //const failureCallback = (err) => res.status(500).json(err);
+                    //editSnippetGroup(snippetGroup, successCallback, failureCallback);
                 } catch (err) {
                     res.status(404).json({ error: 'Snippet group does not exist.' });
+                }
+
+                const snips = 
+                const snippetsToInsert = _.map(snippets, (snippet) => {
+                    snippet.updated = Date.now();
+                    return snippet;
+                });
+            
+                try {
+                    await Snippet.save(snippetsToInsert);
+                } catch (err) {
+                    console.log('Error: ', err);
+                    res.status(500).json({ errors: err });
+                    return;
                 }
             }
         } else {
@@ -402,6 +464,6 @@ snippetRoutes.put('/edit/:snippetGroupId', authenticateUser, async (req, res) =>
         res.json({ error: 'Must specify snippetGroupId' });
     }
 })
-
+*/
 
 export default snippetRoutes;
