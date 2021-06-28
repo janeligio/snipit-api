@@ -253,12 +253,12 @@ snippetRoutes.post('/create', authenticateUser, async (req, res) => {
 // First check if user is owner of snippet
 // TODO: make a delete for a single snippet
 /**
- * @route DELETE /api/v2/snippets/delete/:snippetId
+ * @route DELETE /api/v2/snippets/delete/?=username || userId
  * @description Delete a snippet from the database
  * @access Private
  */
-snippetRoutes.delete('/delete/:snippetGroupId', authenticateUser, async (req, res) => {
-    const { snippetGroupId } = req.params;
+snippetRoutes.delete('/delete/', authenticateUser, authorizeUser, async (req, res) => {
+    const { snippetGroupId } = req.body;
     const { auth } = res.locals;
 
     if (snippetGroupId && auth) {
@@ -267,7 +267,7 @@ snippetRoutes.delete('/delete/:snippetGroupId', authenticateUser, async (req, re
             if (snippetGroup.userId == auth.id) {
                 // delete snippet
                 try {
-                    const snippets = snippetGroup.snippets;
+                    const snippets = await Snippet.find({snippetGroupId: snippetGroupId}).exec();
                     _.forEach(snippets, async (snip) => {
                         await Snippet.deleteOne({ _id: snip._id });
                     })
