@@ -140,11 +140,13 @@ snippetRoutes.get('/:snippetGroupId', authenticateUser, async (req, res) => {
     if (snippetGroupId) {
         try {
             const snippetGroup: any = await SnippetGroup.findById(snippetGroupId).exec();
-            // fetch each snippet that the group uses and return them along with the group
+            const snippets = await Snippet.find({snippetGroupId: snippetGroupId}).exec();
+            console.log(snippets);
+            
             if (snippetGroup.userId == auth.id) {
-                res.json(snippetGroup);
-            } else if (snippetGroup.private === false) {
-                res.json(snippetGroup);
+                res.json({snippetGroup, snippets});
+            } else if (snippetGroup.hidden === false) {
+                res.json({snippetGroup, snippets});
             } else {
                 // If requester is not the owner of the snippet and snippet is private they are forbidden
                 res.status(403).json({ error: 'FORBIDDEN' });
@@ -249,12 +251,10 @@ snippetRoutes.post('/create', authenticateUser, async (req, res) => {
     res.json({ success: true });
 })
 
-// Delete a snippet - AUTHENTICATION & AUTHORIZATION REQUIRED
-// First check if user is owner of snippet
-// TODO: make a delete for a single snippet
+
 /**
  * @route DELETE /api/v2/snippets/delete/?=username || userId
- * @description Delete a snippet from the database
+ * @description Delete a snippet group and its snippets from the database
  * @access Private
  */
 snippetRoutes.delete('/delete/', authenticateUser, authorizeUser, async (req, res) => {
