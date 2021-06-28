@@ -104,7 +104,7 @@ userRoutes.get('/public/', async (req, res) => {
  * @description Edit user information, name bio (private) - AUTHENTICATION & AUTHORIZATION REQUIRED
  * @access Private
  */
- userRoutes.post('/edit', authenticateUser, authorizeUser, async (req, res) => {
+ userRoutes.put('/edit', authenticateUser, authorizeUser, async (req, res) => {
     const { name, bio } = req.body;
     const { id } = res.locals.auth;
 

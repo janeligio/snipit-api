@@ -106,6 +106,24 @@ snippetRoutes.get('/all', async (req, res) => {
     }
 })
 
+
+/**
+ * @route GET /api/v2/snippets/snippet/all
+ * @description Get all public snippets
+ * @access Public
+ **/
+ snippetRoutes.get('/snippet/all', async (req, res) => {
+    console.log(req.headers.host);
+    try {
+        const snippets = await Snippet.find();
+        res.status(200).send(snippets);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send('Error');
+    }
+})
+
+
 // Get specific snippet
 // Check if private field is true/false
 //  If user is owner of snippet, return snippet
@@ -264,6 +282,43 @@ snippetRoutes.delete('/delete/:snippetGroupId', authenticateUser, async (req, re
             }
         } catch (err) {
             res.json({ error: 'Snippet group does not exist' });
+        }
+    }
+})
+
+
+/**
+ * @route DELETE /api/v2/snippets/snippet/delete/?=username || userId
+ * @description Delete an individual snippet from the database
+ * @access Private
+ */
+ snippetRoutes.delete('/snippet/delete/', authenticateUser, authorizeUser, async (req, res) => {
+    const { snippetId, groupId } = req.body;
+    const { auth } = res.locals;
+    console.log(auth);
+    console.log(snippetId);
+
+    if (snippetId && auth) {
+        try {
+            const snippet: any = await Snippet.findById(snippetId).exec();
+            if (snippet.snippetGroupId == groupId) {
+                if (snippet.userId == auth.id) {
+                    // delete snippet
+                    try {
+                        await Snippet.deleteOne({ _id: snippetId });
+                        res.json({ message: `Successfully deleted snippet ${snippetId}` });
+                    } catch (err) {
+                        res.json({ error: err });
+                    }
+                } else {
+                    // If requester is not the owner of snippet group they are forbidden
+                    res.status(403).json({ error: 'FORBIDDEN' });
+                }
+            } else {
+                res.json({ error: "Snippets groups id does not match group Id" });
+            }
+        } catch (err) {
+            res.json({ error: 'Snippet does not exist' });
         }
     }
 })
