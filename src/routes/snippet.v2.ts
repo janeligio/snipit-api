@@ -413,49 +413,81 @@ snippetRoutes.delete('/delete/', authenticateUser, authorizeUser, async (req, re
 
 
 /**
- * @route PUT /api/v2/snippets/edit/:snippetGroupId
+ * @route PUT /api/v2/snippets/edit/?username | ?id
  * @description Edit a snippet group and its snippets
  * @access Private
  */
+
 /*
-snippetRoutes.put('/edit/:snippetGroupId', authenticateUser, authorizeUser, async (req, res) => {
+{"group": {"id": "60f8b4d0dcccfd307ce7a8f6", "userId": "60d7ec506efb2d1f5862de3d", "hidden": false, 
+"title": "21 testing the edit", "description": "desc edit", "tags": []}, 
+"snippets": [{"id": "60f8b4d0dcccfd307ce7a8f7", "fileName": "filename", 
+"title": "21 1st snip test edit", "description": "snip edit desc", 
+"code": "console.log(hinew)", "language": "javascript", "order": 1}, 
+{"id": "60f8b4d0dcccfd307ce7a8f8", "fileName": "filename", "title": "21 2nd snip edit", 
+"description": "snip edit desc", "code": "console.log(hinew)", "language": "javascript", "order": 2}]}
+*/
+
+snippetRoutes.put('/edit/snippet', authenticateUser, authorizeUser, async (req, res) => {
     const { group, snippets } = req.body;
-    const { snippetGroupId } = req.params;
+    const snippetGroupId = group.id;
     const { id } = res.locals.auth;
 
     const { isValid, errors } = await validateSnippetGroup(group);
+    console.log('here1');
     // validate snippets
 
     if (snippetGroupId) {
+        console.log('here2');
         if (isValid) {
+            console.log('here3');
             if (id === group.userId) {
+                console.log('here4');
                 try {
                     const snippetGroup: any = await SnippetGroup.findById(snippetGroupId).exec();
                     snippetGroup.title = group.title;
                     snippetGroup.description = group.description;
                     snippetGroup.tags = group.tags;
                     snippetGroup.updated = Date.now();
-                    console.log('snippetGroup:', snippetGroup);
+                    //console.log('snippetGroup:', snippetGroup);
+                    let updatedSnippets = [];
+                    console.log('here5');
+
+                    for (let i = 0; i < snippets.length; i++) {
+                        const nSnippet: any = await Snippet.findById(snippets[i].id).exec();
+                        nSnippet.fileName = snippets[i].fileName;
+                        nSnippet.title = snippets[i].title;
+                        nSnippet.description = snippets[i].description;
+                        nSnippet.language = snippets[i].language;
+                        nSnippet.code = snippets[i].code;
+                        nSnippet.order = snippets[i].order;
+                        nSnippet.updated = Date.now();
+                        updatedSnippets.push(nSnippet);
+                    }
+                    console.log('here6');
+                    
+                    await snippetGroup.save();
+                    console.log('here7');
+                    for (let i = 0; i < updatedSnippets.length; i++) {
+                        await updatedSnippets[i].save();
+                    }
+                    
+                    console.log('here8');
                     //const successCallback = () => res.status(200).send('Updated snippet information');
                     //const failureCallback = (err) => res.status(500).json(err);
                     //editSnippetGroup(snippetGroup, successCallback, failureCallback);
                 } catch (err) {
+                    console.log(err);
                     res.status(404).json({ error: 'Snippet group does not exist.' });
                 }
-
-                const snips = 
-                const snippetsToInsert = _.map(snippets, (snippet) => {
-                    snippet.updated = Date.now();
-                    return snippet;
-                });
-            
+/*
                 try {
                     await Snippet.save(snippetsToInsert);
                 } catch (err) {
                     console.log('Error: ', err);
                     res.status(500).json({ errors: err });
                     return;
-                }
+                }*/
             }
         } else {
             res.json({ error: errors });
@@ -464,6 +496,6 @@ snippetRoutes.put('/edit/:snippetGroupId', authenticateUser, authorizeUser, asyn
         res.json({ error: 'Must specify snippetGroupId' });
     }
 })
-*/
+
 
 export default snippetRoutes;
