@@ -27,7 +27,31 @@ export default {
         SNIPPET: {
             // TODO: Fill in
         },
+    },
+    ROUTES: {
+        // Authentication
+        AUTHENTICATION: {
+            REGISTER: '/register',
+            LOGIN: '/login',
+        },
+        // Snippets
+        SNIPPET: {
+            ALL: '/all',
+            SNIPPET_ALL: '/snippet/all',
+            USER_USERNAME: '/user/:username',
+            SNIPPETGROUPID: '/:snippetGroupId',
+            SNIPPET_SNIPPETID: '/snippet/:snippetId',
+            CREATE: '/create',
+            DELETE: '/delete',
+            SNIPPET_DELETE: '/snippet/delete',
+            EDIT_PRIVATE: '/edit/private',
+            EDIT_SNIPPET: '/edit/snippet',
+        },
+        // Users
+        USER: {
+            PRIVATE: '/private',
+            PUBLIC: '/public',
+            EDIT: '/edit',
+        },
     }
-
-
 }
