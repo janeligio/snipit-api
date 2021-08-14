@@ -9,7 +9,7 @@ async function createSnippetGroup({ snippetGroup }) {
 }
 
 // Add a snippet to the database
-async function createSnippet(snippet) {
+async function createSnippet({ snippet }) {
     const snippetDocument = await Snippet.create(snippet);
 
     return snippetDocument;
@@ -22,12 +22,12 @@ async function deleteSnippetGroup({ snippetGroupId }) {
 }
 
 // Delete a snippet from the database
-async function deleteSnippet(snippetId) {
+async function deleteSnippet({ snippetId }) {
     await Snippet.findOneAndDelete({ _id: snippetId });
 }
 
 // Edit a snippetGroup from the database
-async function editSnippetGroup(snippetGroupId, snippetGroupData) {
+async function editSnippetGroup({ snippetGroupId, snippetGroupData }) {
     const snippetGroup: any = await SnippetGroup.findOne({ _id: snippetGroupId}).exec();
 
     for ( const [key, value] of Object.entries(snippetGroupData)) {
@@ -38,7 +38,7 @@ async function editSnippetGroup(snippetGroupId, snippetGroupData) {
 }
 
 // Edit a snippet from the database
-async function editSnippet(snippetId, snippetData) {
+async function editSnippet({ snippetId, snippetData }) {
     const snippet: any = await Snippet.findOne({ _id: snippetId}).exec();
 
     for ( const [key, value] of Object.entries(snippetData)) {
@@ -46,6 +46,33 @@ async function editSnippet(snippetId, snippetData) {
     }
 
     await snippet.save();
+}
+
+async function findSnippetGroup({ snippetGroupId }) {
+    const snippetGroup = await SnippetGroup.findOne({ _id: snippetGroupId }).exec();
+
+    const snippets = await Snippet.find({ snippetGroupId }).exec();
+
+    return { snippetGroup, snippets };
+}
+
+async function findSnippet({ snippetId }) {
+    const snippet = await Snippet.findOne({ _id: snippetId }).exec();
+
+    return snippet;
+}
+
+async function findUserSnippetGroups({ userId, username, email }) {
+    const snippetGroupsDocuments = await SnippetGroup.find({ userId }).exec();
+
+    const snippetGroupArray = [];
+
+    for ( const snippetGroup of snippetGroupsDocuments ) {
+        const snippets = await Snippet.find({ snippetGroupId: snippetGroup._id }).exec();
+       snippetGroupArray.push({ ...snippetGroup, snippets });
+    }
+
+    return snippetGroupArray;
 }
 
 export {
