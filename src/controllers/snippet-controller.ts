@@ -62,7 +62,7 @@ async function findSnippet({ snippetId }) {
     return snippet;
 }
 
-async function findUserSnippetGroups({ userId, username, email }) {
+async function findUserSnippetGroups({ userId }) {
     const snippetGroupsDocuments = await SnippetGroup.find({ userId }).exec();
 
     const snippetGroupArray = [];
