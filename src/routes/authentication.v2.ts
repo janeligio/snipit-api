@@ -4,9 +4,13 @@ import jwt from 'jsonwebtoken';
 import User from '../mongoose/models/User';
 import { validateLogin, validateRegister, validateLogin_v2, ValidationMessage } from '../util/validation';
 import { jwtSecret } from '../config/keys';
+import { createUser } from '../controllers/user';
 
 const authRoutes = express.Router();
 
+/**
+ * 
+ * */
 authRoutes.post('/register', async (req, res) => {
     const { username, email, password, confirmPassword } = req.body;
 
@@ -17,40 +21,27 @@ authRoutes.post('/register', async (req, res) => {
         res.json({ error: errors });
         return;
     } else {
-        // The bigger the number, the more computations to generate salt for hashed password
-        const saltRounds = 10;
-        const hash = await bcrypt.hash(password, saltRounds);
-        try {
-            const user: any = await User.create({ username, email, password: hash });
-            console.log(user);
-            const payload = { id: user._id, username };
-            jwt.sign(payload, jwtSecret, { expiresIn: '7d' }, (err, token) => {
-                if (err) {
-                    res.status(500).json({ error: 'Error authenticating' });
-                    return;
-                } else {
-                    console.log('Sending back: ', {
-                        success: true,
-                        token: `Bearer ${token}`
-                    });
 
-                    const redirect = req.headers.host + '/login';
-                    res.header('location', redirect);
-                    res.status(200).json({
-                        success: true,
-                        token: `Bearer ${token}`
-                    });
-                    return;
-                }
-            });
-        } catch (err) {
-            console.error('Error creating user: ', err);
-            res.status(500);
-            res.json({ error: err });
-            return;
-        }
+        createUser({
+            username,
+            email,
+            password,
+            onSuccess: (token) => {
+                console.log(token);
+
+                const redirect = req.headers.host + '/login';
+                res.header('location', redirect);
+                res.status(200).json({ success: true, token: `Bearer ${token}`});
+                return;
+            },
+            onError: (errorMessage) => {
+                res.status(500).json({ error: errorMessage });
+                return;
+            }
+        });
+
+        return;
     }
-
 });
 
 authRoutes.post('/login', async (req, res) => {

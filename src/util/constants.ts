@@ -53,5 +53,6 @@ export default {
             PUBLIC: '/public',
             EDIT: '/edit',
         },
-    }
+    },
+    SALT_ROUNDS: 10,
 }
