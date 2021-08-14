@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import User from '../mongoose/models/User';
 import { validateLogin, validateRegister, validateLogin_v2, ValidationMessage } from '../util/validation';
 import { jwtSecret } from '../config/keys';
-import { createUser } from '../controllers/user';
+import { createUser } from '../controllers/user-controller';
 
 const authRoutes = express.Router();
 
