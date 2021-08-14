@@ -81,5 +81,8 @@ export {
     deleteSnippetGroup,
     deleteSnippet,
     editSnippetGroup,
-    editSnippet
+    editSnippet,
+    findSnippetGroup,
+    findSnippet,
+    findUserSnippetGroups
 }
