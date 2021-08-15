@@ -86,7 +86,7 @@ export function authorizeUser(req, res, next) {
  * Authorize user has access to a specific snippet group.
  * */
 export  async function authorizeUserSnippetGroup(req, res, next) {
-    const { snippetGroupId } = req.query;
+    const { snippetGroupId } = req.params;
 
     if (snippetGroupId && typeof snippetGroupId === 'string' && snippetGroupId.length > 0) {
         const snippetGroup: any = await findSnippetGroup({ snippetGroupId});
