@@ -6,9 +6,7 @@ import { validateLogin, validateRegister, validateLogin_v2, ValidationMessage } 
 import { jwtSecret } from '../config/keys';
 import { createUser } from '../controllers/user-controller';
 
-const authRoutes = express.Router();
-
-authRoutes.post('/register', async (req, res) => {
+async function register(req, res) {
     const { username, email, password, confirmPassword } = req.body;
 
     const { isValid, errors } = await validateRegister({ username, email, password, confirmPassword });
@@ -39,9 +37,9 @@ authRoutes.post('/register', async (req, res) => {
 
         return;
     }
-});
+}
 
-authRoutes.post('/login', async (req, res) => {
+async function login(req, res) {
     const { username, email, password } = req.body;
 
     const { isValid, errors } = await validateLogin_v2({ username, email });
@@ -87,7 +85,44 @@ authRoutes.post('/login', async (req, res) => {
             });
         }
     }
-});
+}
 
+async function getUserDataPublic(req, res) {}
 
-export default authRoutes;
+async function getUserDataPrivate(req, res) {}
+
+async function editUser(req, res) {}
+
+async function deleteUser(req, res) {}
+
+async function getSnippetGroups(req, res) {}
+
+async function getSnippetGroup(req, res) {}
+
+async function getUserSnippetGroups(req, res) {}
+
+async function getUserSnippetGroup(req, res) {}
+
+async function addUserSnippetGroup(req, res) {}
+
+async function editUserSnippetGroup(req, res) {}
+
+async function deleteUserSnippetGroup(req, res) {}
+
+const api = {
+    register,
+    login,
+    getUserDataPublic,
+    getUserDataPrivate,
+    editUser,
+    deleteUser,
+    getSnippetGroups,
+    getSnippetGroup,
+    getUserSnippetGroups,
+    getUserSnippetGroup,
+    addUserSnippetGroup,
+    editUserSnippetGroup,
+    deleteUserSnippetGroup
+};
+
+export default api;
