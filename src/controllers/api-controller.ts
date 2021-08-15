@@ -7,12 +7,16 @@ import {
     validateLogin, 
     validateRegister, 
     validateLogin_v2, 
-    ValidationMessage
+    ValidationMessage,
+    validateEditUser
 } from '../util/validation';
 
 import { 
-    createUser, 
-    findUser } from './user-controller';
+    createUser,
+    deleteUser as _deleteUser,
+    editUser as _editUser,
+    findUser
+} from './user-controller';
 
 import {
     createSnippetGroup,
@@ -38,7 +42,7 @@ async function register(req, res) {
         return;
     } else {
 
-        createUser({
+        await createUser({
             username,
             email,
             password,
@@ -147,7 +151,40 @@ async function getUserDataPrivate(req, res) {
     return;
 }
 
-async function editUser(req, res) {}
+// Not Tested
+// Can only change name and bio
+async function editUser(req, res) {
+    const { username } = req.query;
+    const { name, bio } = req.body;
+
+    // TODO: Validate name and bio
+    const { isValid, errors } = await validateEditUser({ name, bio });
+
+    if (!isValid) {
+        res.status(400);
+        res.json({ error: errors });
+        return;
+    }
+
+    const userData: any = {};
+    if (typeof name === 'string') userData.name = name;
+    if (typeof bio === 'string') userData.bio = bio;
+
+    await _editUser({
+        username,
+        userData, 
+        onSuccess: (user) => {
+            res.status(200).json({ success: true, user });
+            return;
+        }, 
+        onError: (error) => {
+            res.status(500).json({ error });
+            return;
+        }
+    });
+
+    return;
+}
 
 async function deleteUser(req, res) {}
 

@@ -314,3 +314,30 @@ export const validateLogin_v2 = async ({ username, email }): Promise<ValidationM
     message.errors = 'Must provide username or email.';
     return message;
 }
+
+export const validateEditUser = async ({ name, bio }): Promise<ValidationMessage> => {
+    const message: ValidationMessage = {
+        isValid: true,
+        errors: undefined
+    }
+
+    // Validate name
+    if (typeof name === 'string' && name.length > 0) {
+        if (name.length > 100) {
+            message.isValid = false;
+            message.errors = 'Name must be fewer than 100 characters';
+        }
+        return message;
+    }
+
+    // Validate bio
+    if (typeof bio === 'string' && bio.length > 0) {
+        if (bio.length > 250) {
+            message.isValid = false;
+            message.errors = 'Bio must be fewer than 250 characters';
+        }
+        return message;
+    }
+
+    return message;
+};

@@ -30,7 +30,6 @@ const UserSchema = new Schema({
     },
     name: {
         type: String,
-        minLength: 4,
         maxLength: 100,
     },
     bio: {
