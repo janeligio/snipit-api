@@ -77,7 +77,11 @@ interface FindUserSnippetGroupsArgs {
 }
 
 async function findUserSnippetGroups({ userId, hidden }: FindUserSnippetGroupsArgs) {
-    const snippetGroups = await SnippetGroup.find({ userId, hidden }).exec();
+
+    const query: any = { userId };
+    if (!hidden) query.hidden = false;
+
+    const snippetGroups = await SnippetGroup.find(query).exec();
 
     // const snippetGroupArray = [];
 

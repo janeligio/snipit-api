@@ -127,7 +127,25 @@ async function getUserDataPublic(req, res) {
     return;
 }
 
-async function getUserDataPrivate(req, res) {}
+// Tested
+async function getUserDataPrivate(req, res) {
+    const { userId, username } = req.query;
+
+    const privateUserProps = 'date updated username email name bio';
+
+    const user = await findUser({ id: userId, username, selectProps: privateUserProps });
+
+    if (!user) {
+        res.status(404).json({ error: 'User not found.' });
+        return;
+    }
+
+    // Fetch user's snippet groups
+    const snippetGroups = await findUserSnippetGroups({ userId: user._id.toString(), hidden: true });
+
+    res.status(200).json({ user, snippets: snippetGroups });
+    return;
+}
 
 async function editUser(req, res) {}
 
