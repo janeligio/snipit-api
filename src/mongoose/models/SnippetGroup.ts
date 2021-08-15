@@ -31,6 +31,14 @@ const SnippetGroupSchema = new Schema({
         // Will include things like languages and topics
         type: [String],
     },
+    likes: {
+        type: Number,
+        default: 0
+    },
+    shares: {
+        type: Number,
+        default: 0
+    }
 });
 
 const SnippetGroup = model('SnippetGroup', SnippetGroupSchema)

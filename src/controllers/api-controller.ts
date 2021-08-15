@@ -31,6 +31,7 @@ import {
     findUserSnippetGroups
 } from './snippet-controller'
 
+// Untested
 async function register(req, res) {
     const { username, email, password, confirmPassword } = req.body;
 
@@ -64,6 +65,7 @@ async function register(req, res) {
     }
 }
 
+// Tested
 async function login(req, res) {
     const { username, email, password } = req.body;
 
@@ -151,7 +153,7 @@ async function getUserDataPrivate(req, res) {
     return;
 }
 
-// Not Tested
+// Tested
 // Can only change name and bio
 async function editUser(req, res) {
     const { username } = req.query;
