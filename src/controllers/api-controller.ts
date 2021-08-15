@@ -2,9 +2,30 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User from '../mongoose/models/User';
-import { validateLogin, validateRegister, validateLogin_v2, ValidationMessage } from '../util/validation';
 import { jwtSecret } from '../config/keys';
-import { createUser } from '../controllers/user-controller';
+import { 
+    validateLogin, 
+    validateRegister, 
+    validateLogin_v2, 
+    ValidationMessage
+} from '../util/validation';
+
+import { 
+    createUser, 
+    findUser } from './user-controller';
+
+import {
+    createSnippetGroup,
+    createSnippet,
+    deleteSnippetGroup,
+    deleteSnippet,
+    editSnippetGroup,
+    editSnippet,
+    findSnippetGroup,
+    findSnippetGroupWithSnippets,
+    findSnippet,
+    findUserSnippetGroups
+} from './snippet-controller'
 
 async function register(req, res) {
     const { username, email, password, confirmPassword } = req.body;
@@ -87,7 +108,24 @@ async function login(req, res) {
     }
 }
 
-async function getUserDataPublic(req, res) {}
+// Tested
+async function getUserDataPublic(req, res) {
+    const { userId, username } = req.query;
+
+    const publicUserProps = 'date updated username name bio';
+    const user = await findUser({ id: userId, username, selectProps: publicUserProps });
+
+    if (!user) {
+        res.status(404).json({ error: 'User not found.' });
+        return;
+    }
+
+    // Fetch user's snippet groups
+    const snippetGroups = await findUserSnippetGroups({ userId: user._id.toString(), hidden: false });
+
+    res.status(200).json({ user, snippets: snippetGroups });
+    return;
+}
 
 async function getUserDataPrivate(req, res) {}
 

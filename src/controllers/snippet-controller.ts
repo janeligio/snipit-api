@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import SnippetGroup from '../mongoose/models/SnippetGroup';
 import Snippet from '../mongoose/models/Snippet';
 
@@ -68,17 +69,29 @@ async function findSnippet({ snippetId }) {
     return snippet;
 }
 
-async function findUserSnippetGroups({ userId }) {
-    const snippetGroupsDocuments = await SnippetGroup.find({ userId }).exec();
+interface FindUserSnippetGroupsArgs {
+    /** id field of user **/
+    userId: string;
+    /** Whether to return private snippet groups. **/
+    hidden: boolean;
+}
 
-    const snippetGroupArray = [];
+async function findUserSnippetGroups({ userId, hidden }: FindUserSnippetGroupsArgs) {
+    const snippetGroups = await SnippetGroup.find({ userId, hidden }).exec();
 
-    for ( const snippetGroup of snippetGroupsDocuments ) {
-        const snippets = await Snippet.find({ snippetGroupId: snippetGroup._id }).exec();
-       snippetGroupArray.push({ ...snippetGroup, snippets });
-    }
+    // const snippetGroupArray = [];
 
-    return snippetGroupArray;
+    _.forEach(snippetGroups, async (snippetGroup) => {
+        snippetGroup.snippets = await Snippet.find({ snippetGroupId: snippetGroup._id.toString() }).exec();
+    });
+
+    // for ( const snippetGroup of snippetGroupsDocuments ) {
+    //     const snippets = await Snippet.find({ snippetGroupId: snippetGroup._id }).exec();
+    //     snippetGroup.snippets = snippets;
+    //     // snippetGroupArray.push({ ...snippetGroup, snippets });
+    // }
+
+    return snippetGroups;
 }
 
 export {
