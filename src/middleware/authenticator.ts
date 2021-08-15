@@ -1,5 +1,6 @@
 import { jwtSecret } from '../config/keys';
 import jwt from 'jsonwebtoken';
+import { findSnippetGroup } from '../controllers/snippet-controller';
 
 function getBearerTokenFromAuthHeader(authHeader: string): string {
     if (authHeader.startsWith("Bearer ")) {
@@ -77,6 +78,34 @@ export function authorizeUser(req, res, next) {
     } else {
         res.status(400);
         res.json({ errors: 'Must provide id or username query' });
+        return;
+    }
+}
+
+/** 
+ * Authorize user has access to a specific snippet group.
+ * */
+export  async function authorizeUserSnippetGroup(req, res, next) {
+    const { snippetGroupId } = req.query;
+
+    if (snippetGroupId && typeof snippetGroupId === 'string' && snippetGroupId.length > 0) {
+        const snippetGroup: any = await findSnippetGroup({ snippetGroupId});
+
+        if (!snippetGroup) {
+            res.status(404).json({ errors: 'Snippet group does not exist.' });
+        } else {
+            const { userId } = snippetGroup;
+
+            if (validateUserAuthenticityId(res.locals, userId)) {
+                console.log('User is authorized to view snippet group.');
+                next();
+            } else {
+                res.status(403).json({ error: 'FORBIDDEN: User does not have access to this snippet group.' });
+            }
+        }
+    } else {
+        res.status(400);
+        res.json({ errors: 'Must provide snippetGroupId query' });
         return;
     }
 }
