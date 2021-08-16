@@ -31,7 +31,7 @@ import {
     findUserSnippetGroups
 } from './snippet-controller'
 
-// Untested
+// Tested
 async function register(req, res) {
     const { username, email, password, confirmPassword } = req.body;
 
@@ -188,13 +188,32 @@ async function editUser(req, res) {
     return;
 }
 
-async function deleteUser(req, res) {}
+// Untested
+async function deleteUser(req, res) {
+    const { username } = req.query;
+
+    await _deleteUser({
+        username,
+        onSuccess: (user) => {
+            res.status(200).json({ success: true, user });
+            return;
+        },
+        onError: (error) => {
+            res.status(500).json({ error });
+            return;
+        }
+    });
+
+    return;
+}
 
 async function getSnippetGroups(req, res) {}
 
 async function getSnippetGroup(req, res) {}
 
-async function getUserSnippetGroups(req, res) {}
+async function getUserSnippetGroups(req, res) {
+    
+}
 
 async function getUserSnippetGroup(req, res) {}
 
