@@ -31,6 +31,7 @@ import {
     findSnippetGroupWithSnippets,
     findSnippet,
     findUserSnippetGroups,
+    querySnippetGroups,
     SnippetGroup,
 } from './snippet-controller'
 
@@ -211,7 +212,18 @@ async function deleteUser(req, res) {
     return;
 }
 
-async function getSnippetGroups(req, res) {}
+async function getSnippetGroups(req, res) {
+
+    const query: SnippetGroup = { hidden: false };
+
+    const sortBy: 'ascending' | 'descending' = 'descending';
+    const sort = { date: sortBy };
+
+    const snippetGroups = await querySnippetGroups({ query, sort });
+
+    res.status(200).json({ snippetGroups });
+    return;
+}
 
 async function getSnippetGroup(req, res) {}
 

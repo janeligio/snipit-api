@@ -169,6 +169,40 @@ async function findUserSnippetGroups({ userId, hidden }: FindUserSnippetGroupsAr
     return snippetGroups;
 }
 
+interface QuerySnippetGroupsArgs {
+    /** The query to search for snippet groups */
+    query: SnippetGroup;
+    /** Fields to return */
+    projection?: string | object;
+    /** The sort order of the snippet groups */
+    sort?: {
+        date?: 'ascending' | 'descending';
+        language?: 'ascending' | 'descending';
+    };
+    /** Starting index of the results */
+    skip?: number;
+    /** Last index of the results */
+    limit?: number;
+
+}
+async function querySnippetGroups({ query, projection, sort, skip, limit }: QuerySnippetGroupsArgs) {
+
+    const options = { sort, skip, limit };
+
+    const snippetGroups = await SnippetGroup
+        .find(query, projection, options)
+        .exec();
+        // .sort(sort)
+        // .skip(skip)
+        // .limit(limit)
+
+    _.forEach(snippetGroups, async (snippetGroup) => {
+        snippetGroup.snippets = await Snippet.find({ snippetGroupId: snippetGroup._id.toString() }).exec();
+    });
+
+    return snippetGroups;
+}
+
 export {
     createSnippetGroup,
     createSnippet,
@@ -180,5 +214,6 @@ export {
     findSnippetGroup,
     findSnippetGroupWithSnippets,
     findSnippet,
-    findUserSnippetGroups
+    findUserSnippetGroups,
+    querySnippetGroups
 }
