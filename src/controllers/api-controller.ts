@@ -28,6 +28,7 @@ import {
     editSnippetGroup,
     editSnippet,
     findSnippetGroup,
+    findSnippetGroupSnippets,
     findSnippetGroupWithSnippets,
     findSnippet,
     findUserSnippetGroups,
@@ -212,6 +213,7 @@ async function deleteUser(req, res) {
     return;
 }
 
+// Test more
 async function getSnippetGroups(req, res) {
 
     const query: SnippetGroup = { hidden: false };
@@ -225,7 +227,38 @@ async function getSnippetGroups(req, res) {
     return;
 }
 
-async function getSnippetGroup(req, res) {}
+async function getSnippetGroup(req, res) {
+    const { snippetGroupId } = req.params;
+    // TODO: Implement authentication but don't send FORBIDDEN
+    // If user is logged in AND the snippet group is hidden,
+    // Check if the snippet group belongs to the user
+    // If not the user can't see it.
+
+    if (!snippetGroupId) {
+        res.status(400).json({ error: 'Snippet group id not provided.' });
+        return;
+    }
+
+    const snippetGroup: any = await findSnippetGroup({ snippetGroupId });
+    
+    if (!snippetGroup) {
+        res.status(404).json({ error: 'Snippet group not found.' });
+        return;
+    }
+
+    if (snippetGroup.hidden) {
+        if (res.locals.auth?.id !== snippetGroup.userId.toString()) {
+            res.status(403).json({ error: 'Forbidden.' });
+            return;
+        }
+    }
+
+    const snippets = await findSnippetGroupSnippets({ snippetGroupId });
+
+    res.status(200).json({ snippetGroup, snippets });
+    return;
+
+}
 
 async function getUserSnippetGroups(req, res) {}
 

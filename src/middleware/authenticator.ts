@@ -56,6 +56,27 @@ export function authenticateUser(req, res, next) {
     }
 }
 
+// Sets res.locals.auth to the user's id and username
+// if the user is authenticated.
+// If the user is not authenticated, res.locals.auth is set to null.
+// For routes where authentication is optional
+export function checkAuthentication(req, res, next) {
+    const authHeader = req.headers.authorization;
+
+    if (authHeader) {
+        try {
+            const { id, username } = verifyToken(getBearerTokenFromAuthHeader(authHeader));
+            res.locals.auth = { id, username };
+            console.log('Set res.locals.auth to: ', res.locals.auth);
+            console.log('User authenticated.');
+        } catch (err) {
+            console.log('Invalid JWT');
+        }
+    }
+
+    next();
+}
+
 export function authorizeUser(req, res, next) {
     const { id, username } = req.query;
 

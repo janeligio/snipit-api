@@ -128,12 +128,21 @@ async function editSnippet({ snippetId, snippetData }) {
     await snippet.save();
 }
 
+// Finds a snippet group with the given snippetGroupId
 async function findSnippetGroup({ snippetGroupId }) {
     const snippetGroup = await SnippetGroup.findById(snippetGroupId).exec();
 
     return snippetGroup;
 }
 
+// Finds all snippets with the given snippetGroupId
+async function findSnippetGroupSnippets({ snippetGroupId }) {
+    const snippets = await Snippet.find({ snippetGroupId }).exec();
+
+    return snippets;
+}
+
+// Finds a snippet group and all its snippets with the given snippetGroupId
 async function findSnippetGroupWithSnippets({ snippetGroupId }) {
     const snippetGroup = await SnippetGroup.findOne({ _id: snippetGroupId }).exec();
 
@@ -212,6 +221,7 @@ export {
     editSnippetGroup,
     editSnippet,
     findSnippetGroup,
+    findSnippetGroupSnippets,
     findSnippetGroupWithSnippets,
     findSnippet,
     findUserSnippetGroups,
