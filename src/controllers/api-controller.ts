@@ -8,7 +8,8 @@ import {
     validateRegister, 
     validateLogin_v2, 
     ValidationMessage,
-    validateEditUser
+    validateEditUser,
+    validateSnippetGroup
 } from '../util/validation';
 
 import { 
@@ -211,13 +212,46 @@ async function getSnippetGroups(req, res) {}
 
 async function getSnippetGroup(req, res) {}
 
-async function getUserSnippetGroups(req, res) {
-    
-}
+async function getUserSnippetGroups(req, res) {}
 
 async function getUserSnippetGroup(req, res) {}
 
-async function addUserSnippetGroup(req, res) {}
+// Not 100% Tested
+async function addUserSnippetGroup(req, res) {
+    const { hidden, title, description, tags, snippets } = req.body;
+
+    const { isValid, errors } = await validateSnippetGroup({ hidden, title, description, tags, snippets });
+
+    if (!isValid) {
+        res.status(400);
+        res.json({ error: errors });
+        return;
+    }
+
+    const userId = res.locals.auth.id;
+
+    const snippetGroup = await createSnippetGroup({
+        snippetGroup: {
+            userId,
+            title,
+            description,
+            tags,
+            hidden,
+        }
+    });
+
+    const snippetGroupId = snippetGroup._id;
+
+    const createdSnippets = await Promise.all(snippets.map(async (snippet) => {
+            snippet.userId = userId;
+            snippet.snippetGroupId = snippetGroupId;
+            return await createSnippet({ snippet });
+        }
+    ));
+
+    res.status(200).json({ success: true, snippetGroup, createdSnippets });
+    return;
+}
 
 async function editUserSnippetGroup(req, res) {}
 

@@ -2,15 +2,63 @@ import _ from 'lodash';
 import SnippetGroup from '../mongoose/models/SnippetGroup';
 import Snippet from '../mongoose/models/Snippet';
 
+
+interface SnippetGroup {
+    /** Id of the owner of the snippet group */
+    userId?: string;
+    /** Title of the snippet group */
+    title?: string;
+    /** Description of the snippet group */
+    description?: string;
+    /** Languages and topics used in the snippet group */
+    tags?: string[];
+    /** Whether the snippet group is only viewable by the owner */
+    hidden?: boolean;
+}
+
+interface Snippet {
+    /** Id of the owner of the snippet */
+    userId?: string;
+    /** Id of the snippet group this snippet belongs to */
+    snippetGroupId?: string;
+    /** Title of the snippet */
+    title?: string;
+    /** Description of the snippet */
+    description?: string;
+    /** Snippet code */
+    code?: string;
+    /** Language of the snippet */
+    language?: string;
+    /** Filename of the snippet */
+    filename?: string;
+    /** Order of the snippet in the snippet group */
+    order?: number;
+    /** Date at which the snippet was created */
+    updated?: Date;
+
+}
+
+
+interface CreateSnippetGroupArgs {
+    snippetGroup: SnippetGroup;
+}
 // Add a snippetGroup to the database
-async function createSnippetGroup({ snippetGroup }) {
+/**
+ * @param snippetGroup
+ * @returns {Promise<SnippetGroup>} The snippet group created.
+ **/
+async function createSnippetGroup({ snippetGroup }: CreateSnippetGroupArgs) {
     const snippetGroupDocument = await SnippetGroup.create(snippetGroup);
 
     return snippetGroupDocument;
 }
 
+
+interface CreateSnippetArgs {
+    snippet: Snippet;
+}
 // Add a snippet to the database
-async function createSnippet({ snippet }) {
+async function createSnippet({ snippet }: CreateSnippetArgs) {
     const snippetDocument = await Snippet.create(snippet);
 
     return snippetDocument;
@@ -83,17 +131,9 @@ async function findUserSnippetGroups({ userId, hidden }: FindUserSnippetGroupsAr
 
     const snippetGroups = await SnippetGroup.find(query).exec();
 
-    // const snippetGroupArray = [];
-
     _.forEach(snippetGroups, async (snippetGroup) => {
         snippetGroup.snippets = await Snippet.find({ snippetGroupId: snippetGroup._id.toString() }).exec();
     });
-
-    // for ( const snippetGroup of snippetGroupsDocuments ) {
-    //     const snippets = await Snippet.find({ snippetGroupId: snippetGroup._id }).exec();
-    //     snippetGroup.snippets = snippets;
-    //     // snippetGroupArray.push({ ...snippetGroup, snippets });
-    // }
 
     return snippetGroups;
 }
