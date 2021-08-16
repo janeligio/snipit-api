@@ -23,6 +23,7 @@ import {
     createSnippetGroup,
     createSnippet,
     deleteSnippetGroup,
+    deleteSnippetGroupSnippets,
     deleteSnippet,
     editSnippetGroup,
     editSnippet,
@@ -30,7 +31,7 @@ import {
     findSnippetGroupWithSnippets,
     findSnippet,
     findUserSnippetGroups,
-    SnippetGroup
+    SnippetGroup,
 } from './snippet-controller'
 
 // Tested
@@ -191,6 +192,7 @@ async function editUser(req, res) {
 }
 
 // Untested
+// TODO: Delete snippet groups and snippets that belong to the user
 async function deleteUser(req, res) {
     const { username } = req.query;
 
@@ -254,6 +256,7 @@ async function addUserSnippetGroup(req, res) {
     return;
 }
 
+// Tested
 async function editUserSnippetGroup(req, res) {
     const { snippetGroupId } = req.params;
     const { hidden, title, description, tags } = req.body;
@@ -286,7 +289,16 @@ async function editUserSnippetGroup(req, res) {
     });
 }
 
-async function deleteUserSnippetGroup(req, res) {}
+// Tested
+async function deleteUserSnippetGroup(req, res) {
+    const { snippetGroupId } = req.params;
+
+    const deletedSnippets = await deleteSnippetGroupSnippets({ snippetGroupId });
+
+    const deletedSnippetGroup = await deleteSnippetGroup({ snippetGroupId });
+
+    res.status(200).json({ success: true, deletedSnippetGroup, deletedSnippets });
+}
 
 const api = {
     register,

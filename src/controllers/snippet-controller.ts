@@ -67,10 +67,26 @@ async function createSnippet({ snippet }: CreateSnippetArgs) {
     return snippetDocument;
 }
 
+interface DeleteSnippetGroupArgs {
+    /** The id of the snippet group to delete */
+    snippetGroupId: string;
+}
 // Delete a snippetGroup from the database and deletes its snippets
-async function deleteSnippetGroup({ snippetGroupId }) {
-    await Snippet.deleteMany({ snippetGroupId });
-    await SnippetGroup.findOneAndDelete({ _id: snippetGroupId }).exec()
+async function deleteSnippetGroup({ snippetGroupId }: DeleteSnippetGroupArgs) {
+    const deletedSnippetGroup = await SnippetGroup.findOneAndDelete({ _id: snippetGroupId }).exec()
+
+    return deletedSnippetGroup;
+}
+
+interface DeleteSnippetGroupSnippetsArgs {
+    /** The snippetGroupId of the snippets to delete */
+    snippetGroupId: string;
+}
+// Delete all snippets with the given snippetGroupId
+async function deleteSnippetGroupSnippets({ snippetGroupId }: DeleteSnippetGroupSnippetsArgs) {
+    const deletedSnippets = await Snippet.deleteMany({ snippetGroupId });
+
+    return deletedSnippets;
 }
 
 // Delete a snippet from the database
@@ -157,6 +173,7 @@ export {
     createSnippetGroup,
     createSnippet,
     deleteSnippetGroup,
+    deleteSnippetGroupSnippets,
     deleteSnippet,
     editSnippetGroup,
     editSnippet,
