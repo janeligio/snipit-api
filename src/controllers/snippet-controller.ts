@@ -3,7 +3,7 @@ import SnippetGroup from '../mongoose/models/SnippetGroup';
 import Snippet from '../mongoose/models/Snippet';
 
 
-interface SnippetGroup {
+export interface SnippetGroup {
     /** Id of the owner of the snippet group */
     userId?: string;
     /** Title of the snippet group */
@@ -14,6 +14,8 @@ interface SnippetGroup {
     tags?: string[];
     /** Whether the snippet group is only viewable by the owner */
     hidden?: boolean;
+    /** Date at which the snippet group was created */
+    updated?: Date;
 }
 
 interface Snippet {
@@ -42,10 +44,11 @@ interface Snippet {
 interface CreateSnippetGroupArgs {
     snippetGroup: SnippetGroup;
 }
-// Add a snippetGroup to the database
+
 /**
  * @param snippetGroup
  * @returns {Promise<SnippetGroup>} The snippet group created.
+ * @description Add a snippetGroup to the database
  **/
 async function createSnippetGroup({ snippetGroup }: CreateSnippetGroupArgs) {
     const snippetGroupDocument = await SnippetGroup.create(snippetGroup);
@@ -75,15 +78,27 @@ async function deleteSnippet({ snippetId }) {
     await Snippet.findOneAndDelete({ _id: snippetId });
 }
 
+interface EditSnippetGroupArgs {
+    snippetGroupId: string;
+    snippetGroupData: SnippetGroup;
+    onSuccess: (snippetGroup: SnippetGroup) => void;
+    onError: (error: string) => void;
+}
 // Edit a snippetGroup from the database
-async function editSnippetGroup({ snippetGroupId, snippetGroupData }) {
-    const snippetGroup: any = await SnippetGroup.findOne({ _id: snippetGroupId}).exec();
+async function editSnippetGroup({ snippetGroupId, snippetGroupData, onSuccess, onError }: EditSnippetGroupArgs) {
 
-    for ( const [key, value] of Object.entries(snippetGroupData)) {
-        snippetGroup[key] = value;
+    const query = { _id: snippetGroupId };
+
+    try {
+        const options = { new : true }; // Returns the update document
+        const updatedSnippetGroup: any = await SnippetGroup
+            .findOneAndUpdate(query, { ...snippetGroupData, updated: Date.now()}, options)
+            .exec();
+
+        onSuccess(updatedSnippetGroup);
+    } catch (err) {
+        onError("Error editing user.");
     }
-
-    await snippetGroup.save();
 }
 
 // Edit a snippet from the database

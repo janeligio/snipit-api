@@ -19,11 +19,11 @@ function verifyToken(token) {
 }
 
 export function validateUserAuthenticity(locals, id) {
-    return locals.auth && locals.auth.id && id === locals.auth.id;
+    return locals.auth && locals.auth.id && id.toString() === locals.auth.id;
 }
 
 export function validateUserAuthenticityId(locals, id) {
-    return locals.auth && locals.auth.id && id === locals.auth.id;
+    return locals.auth && locals.auth.id && id.toString() === locals.auth.id;
 }
 
 export function validateUserAuthenticityUsername(locals, username) {
@@ -85,17 +85,17 @@ export function authorizeUser(req, res, next) {
 /** 
  * Authorize user has access to a specific snippet group.
  * */
-export  async function authorizeUserSnippetGroup(req, res, next) {
+export async function authorizeUserSnippetGroup(req, res, next) {
     const { snippetGroupId } = req.params;
 
     if (snippetGroupId && typeof snippetGroupId === 'string' && snippetGroupId.length > 0) {
-        const snippetGroup: any = await findSnippetGroup({ snippetGroupId});
+        const snippetGroup: any = await findSnippetGroup({ snippetGroupId });
 
         if (!snippetGroup) {
             res.status(404).json({ errors: 'Snippet group does not exist.' });
         } else {
             const { userId } = snippetGroup;
-
+            
             if (validateUserAuthenticityId(res.locals, userId)) {
                 console.log('User is authorized to view snippet group.');
                 next();

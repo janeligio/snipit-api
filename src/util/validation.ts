@@ -102,7 +102,7 @@ export function validateSnippetGroup(snippetGroup): ValidationMessage {
         return message;
     }
 
-    if (typeof title !== 'string' && title.length > 100) {
+    if (typeof title === 'string' && title.length > 100) {
         message.isValid = false;
         message.errors = 'Title must be fewer than 100 characters';
         return message;

@@ -29,7 +29,8 @@ import {
     findSnippetGroup,
     findSnippetGroupWithSnippets,
     findSnippet,
-    findUserSnippetGroups
+    findUserSnippetGroups,
+    SnippetGroup
 } from './snippet-controller'
 
 // Tested
@@ -253,7 +254,37 @@ async function addUserSnippetGroup(req, res) {
     return;
 }
 
-async function editUserSnippetGroup(req, res) {}
+async function editUserSnippetGroup(req, res) {
+    const { snippetGroupId } = req.params;
+    const { hidden, title, description, tags } = req.body;
+
+    const { isValid, errors } = await validateSnippetGroup({ hidden, title, description, tags });
+
+    if (!isValid) {
+        res.status(400);
+        res.json({ error: errors });
+        return;
+    }
+
+    const snippetGroupData: SnippetGroup = {};
+    if (typeof hidden !== 'undefined') snippetGroupData.hidden = hidden;
+    if (typeof title !== 'undefined') snippetGroupData.title = title;
+    if (typeof description !== 'undefined') snippetGroupData.description = description;
+    if (typeof tags !== 'undefined') snippetGroupData.tags = tags;
+
+    await editSnippetGroup({
+        snippetGroupId,
+        snippetGroupData,
+        onSuccess: (updatedSnippetGroup) => {
+            res.status(200).json({ success: true, snippetGroup: updatedSnippetGroup });
+            return;
+        },
+        onError: (error) => {
+            res.status(500).json({ error });
+            return;
+        }
+    });
+}
 
 async function deleteUserSnippetGroup(req, res) {}
 
