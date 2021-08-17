@@ -1,6 +1,6 @@
 import { jwtSecret } from '../config/keys';
 import jwt from 'jsonwebtoken';
-import { findSnippetGroup } from '../controllers/snippet-controller';
+import sc from '../controllers/snippet-controller';
 
 function getBearerTokenFromAuthHeader(authHeader: string): string {
     if (authHeader.startsWith("Bearer ")) {
@@ -110,7 +110,7 @@ export async function authorizeUserSnippetGroup(req, res, next) {
     const { snippetGroupId } = req.params;
 
     if (snippetGroupId && typeof snippetGroupId === 'string' && snippetGroupId.length > 0) {
-        const snippetGroup: any = await findSnippetGroup({ snippetGroupId });
+        const snippetGroup: any = await sc.findSnippetGroup({ snippetGroupId });
 
         if (!snippetGroup) {
             res.status(404).json({ errors: 'Snippet group does not exist.' });
