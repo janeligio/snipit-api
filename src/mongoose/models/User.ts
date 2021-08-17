@@ -1,6 +1,27 @@
 import { Schema, model } from 'mongoose'
 
-const UserSchema = new Schema({
+export interface User {
+    /** Unique identifier */
+    _id?: string;
+    /** Date the account was created */
+    date?: Date;
+    /** Date the account details were updated */
+    updated?: Date;
+    /** Username */
+    username?: string;
+    /** Password */
+    password?: string;
+    /** Confirm password */
+    confirmPassword?: string;
+    /** Email */
+    email?: string;
+    /** User's name */
+    name?: string;
+    /** User's bio */
+    bio?: string;
+};
+
+const UserSchema = new Schema<User>({
     date: {
         type: Date,
         default: Date.now(),
@@ -36,8 +57,8 @@ const UserSchema = new Schema({
         type: String,
         maxLength: 250
     },
-})
+});
 
-const User = model('User', UserSchema)
+const UserModel = model<User>('User', UserSchema);
 
-export default User
+export default UserModel;

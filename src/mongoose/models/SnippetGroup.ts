@@ -1,7 +1,28 @@
 import { Schema, model } from 'mongoose'
-import { SnippetSchema } from './Snippet';
+import { Snippet } from './Snippet';
 
-const SnippetGroupSchema = new Schema({
+export interface SnippetGroup {
+    /** Unique identifier */
+    _id?: string;
+    /** Date created */
+    date?: Date;
+    /** Date at which the snippet group was created */
+    updated?: Date;
+    /** Id of the owner of the snippet group */
+    userId?: string;
+    /** Title of the snippet group */
+    title?: string;
+    /** Description of the snippet group */
+    description?: string;
+    /** Languages and topics used in the snippet group */
+    tags?: string[];
+    /** Whether the snippet group is only viewable by the owner */
+    hidden?: boolean;
+    /** Snippets in the snippet group */
+    snippets?: Snippet[];
+}
+
+const SnippetGroupSchema = new Schema<SnippetGroup>({
     date: {
         type: Date,
         default: Date.now(),
@@ -16,12 +37,14 @@ const SnippetGroupSchema = new Schema({
     title: {
         maxLength: 100,
         type: String,
-        trim: true
+        trim: true,
+        default: ''
     },
     description: {
         maxLength: 1000,
         type: String,
-        trim: true
+        trim: true,
+        default: ''
     },
     userId: {
         type: Schema.Types.ObjectId,
@@ -30,6 +53,7 @@ const SnippetGroupSchema = new Schema({
     tags: {
         // Will include things like languages and topics
         type: [String],
+        default: [],
     },
     likes: {
         type: Number,
@@ -41,6 +65,6 @@ const SnippetGroupSchema = new Schema({
     }
 });
 
-const SnippetGroup = model('SnippetGroup', SnippetGroupSchema)
+const SnippetGroupModel = model<SnippetGroup>('SnippetGroup', SnippetGroupSchema)
 
-export default SnippetGroup
+export default SnippetGroupModel

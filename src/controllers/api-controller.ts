@@ -1,8 +1,9 @@
-import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import User from '../mongoose/models/User';
 import { jwtSecret } from '../config/keys';
+import User from '../mongoose/models/User';
+import { SnippetGroup } from '../mongoose/models/SnippetGroup';
+import { Snippet } from '../mongoose/models/Snippet';
 import { 
     validateLogin, 
     validateRegister, 
@@ -33,7 +34,6 @@ import {
     findSnippet,
     findUserSnippetGroups,
     querySnippetGroups,
-    SnippetGroup,
 } from './snippet-controller'
 
 // Tested
@@ -227,6 +227,7 @@ async function getSnippetGroups(req, res) {
     return;
 }
 
+// Tested
 async function getSnippetGroup(req, res) {
     const { snippetGroupId } = req.params;
     // TODO: Implement authentication but don't send FORBIDDEN
@@ -239,7 +240,7 @@ async function getSnippetGroup(req, res) {
         return;
     }
 
-    const snippetGroup: any = await findSnippetGroup({ snippetGroupId });
+    const snippetGroup: SnippetGroup = await findSnippetGroup({ snippetGroupId });
     
     if (!snippetGroup) {
         res.status(404).json({ error: 'Snippet group not found.' });
@@ -290,7 +291,7 @@ async function addUserSnippetGroup(req, res) {
 
     const snippetGroupId = snippetGroup._id;
 
-    const createdSnippets = await Promise.all(snippets.map(async (snippet) => {
+    const createdSnippets = await Promise.all(snippets.map(async (snippet: Snippet) => {
             snippet.userId = userId;
             snippet.snippetGroupId = snippetGroupId;
             return await createSnippet({ snippet });
