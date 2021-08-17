@@ -63,39 +63,36 @@ async function deleteSnippet({ snippetId }) {
 interface EditSnippetGroupArgs {
     snippetGroupId: string;
     snippetGroupData: SnippetGroup;
-    onSuccess: (snippetGroup: SnippetGroup) => void;
-    onError: (error: string) => void;
 }
 // Edit a snippetGroup from the database
-async function editSnippetGroup({ snippetGroupId, snippetGroupData, onSuccess, onError }: EditSnippetGroupArgs) {
+async function editSnippetGroup({ snippetGroupId, snippetGroupData }: EditSnippetGroupArgs) {
 
     const query = { _id: snippetGroupId };
+    const options = { new : true }; // Returns the updated document
+    snippetGroupData.updated = new Date();
 
-    try {
-        const options = { new : true }; // Returns the update document
+    const updatedSnippetGroup: SnippetGroup = await SnippetGroupModel
+        .findOneAndUpdate(query, snippetGroupData, options)
+        .exec();
 
-        snippetGroupData.updated = new Date();
-
-        const updatedSnippetGroup: any = await SnippetGroupModel
-            .findOneAndUpdate(query, snippetGroupData, options)
-            .exec();
-
-        onSuccess(updatedSnippetGroup);
-    } catch (err) {
-        onError("Error editing user.");
-    }
+    return updatedSnippetGroup;
 }
 
-// TODO: Implement
+interface EditSnippetArgs {
+    snippetId: string;
+    snippetData: SnippetGroup;
+}
 // Edit a snippet from the database
-async function editSnippet({ snippetId, snippetData }) {
-    // const snippet: Snippet = await SnippetModel.findOne({ _id: snippetId}).exec();
+async function editSnippet({ snippetId, snippetData }: EditSnippetArgs) {
+    const query = { _id: snippetId };
+    const options = { new : true }; // Returns the updated document
+    snippetData.updated = new Date();
 
-    // for ( const [key, value] of Object.entries(snippetData)) {
-    //     snippet[key] = value;
-    // }
+    const updatedSnippet: Snippet = await SnippetModel
+        .findOneAndUpdate(query, snippetData, options)
+        .exec();
 
-    // await snippet.save();
+    return updatedSnippet;
 }
 
 // Finds a snippet group with the given snippetGroupId
@@ -182,7 +179,7 @@ async function querySnippetGroups({ query, projection, sort, skip, limit }: Quer
     return snippetGroups;
 }
 
-export {
+const sc = {
     createSnippetGroup,
     createSnippet,
     deleteSnippetGroup,
@@ -196,4 +193,6 @@ export {
     findSnippet,
     findUserSnippetGroups,
     querySnippetGroups
-}
+};
+
+export default sc;

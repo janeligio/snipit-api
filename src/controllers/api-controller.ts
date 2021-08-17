@@ -13,28 +13,8 @@ import {
     validateSnippetGroup
 } from '../util/validation';
 
-import { 
-    createUser,
-    deleteUser as _deleteUser,
-    editUser as _editUser,
-    findUser
-} from './user-controller';
-
-import {
-    createSnippetGroup,
-    createSnippet,
-    deleteSnippetGroup,
-    deleteSnippetGroupSnippets,
-    deleteSnippet,
-    editSnippetGroup,
-    editSnippet,
-    findSnippetGroup,
-    findSnippetGroupSnippets,
-    findSnippetGroupWithSnippets,
-    findSnippet,
-    findUserSnippetGroups,
-    querySnippetGroups,
-} from './snippet-controller'
+import uc from './user-controller';
+import sc from './snippet-controller'
 
 // Tested
 async function register(req, res) {
@@ -48,7 +28,7 @@ async function register(req, res) {
         return;
     } else {
 
-        await createUser({
+        await uc.createUser({
             username,
             email,
             password,
@@ -124,7 +104,7 @@ async function getUserDataPublic(req, res) {
     const { userId, username } = req.query;
 
     const publicUserProps = 'date updated username name bio';
-    const user = await findUser({ id: userId, username, selectProps: publicUserProps });
+    const user = await uc.findUser({ id: userId, username, selectProps: publicUserProps });
 
     if (!user) {
         res.status(404).json({ error: 'User not found.' });
@@ -132,7 +112,7 @@ async function getUserDataPublic(req, res) {
     }
 
     // Fetch user's snippet groups
-    const snippetGroups = await findUserSnippetGroups({ userId: user._id.toString(), hidden: false });
+    const snippetGroups = await sc.findUserSnippetGroups({ userId: user._id.toString(), hidden: false });
 
     res.status(200).json({ user, snippets: snippetGroups });
     return;
@@ -144,7 +124,7 @@ async function getUserDataPrivate(req, res) {
 
     const privateUserProps = 'date updated username email name bio';
 
-    const user = await findUser({ id: userId, username, selectProps: privateUserProps });
+    const user = await uc.findUser({ id: userId, username, selectProps: privateUserProps });
 
     if (!user) {
         res.status(404).json({ error: 'User not found.' });
@@ -152,7 +132,7 @@ async function getUserDataPrivate(req, res) {
     }
 
     // Fetch user's snippet groups
-    const snippetGroups = await findUserSnippetGroups({ userId: user._id.toString(), hidden: true });
+    const snippetGroups = await sc.findUserSnippetGroups({ userId: user._id.toString(), hidden: true });
 
     res.status(200).json({ user, snippets: snippetGroups });
     return;
@@ -177,7 +157,7 @@ async function editUser(req, res) {
     if (typeof name === 'string') userData.name = name;
     if (typeof bio === 'string') userData.bio = bio;
 
-    await _editUser({
+    await uc.editUser({
         username,
         userData, 
         onSuccess: (user) => {
@@ -198,7 +178,7 @@ async function editUser(req, res) {
 async function deleteUser(req, res) {
     const { username } = req.query;
 
-    await _deleteUser({
+    await uc.deleteUser({
         username,
         onSuccess: (user) => {
             res.status(200).json({ success: true, user });
@@ -221,7 +201,7 @@ async function getSnippetGroups(req, res) {
     const sortBy: 'ascending' | 'descending' = 'descending';
     const sort = { date: sortBy };
 
-    const snippetGroups = await querySnippetGroups({ query, sort });
+    const snippetGroups = await sc.querySnippetGroups({ query, sort });
 
     res.status(200).json({ snippetGroups });
     return;
@@ -230,17 +210,13 @@ async function getSnippetGroups(req, res) {
 // Tested
 async function getSnippetGroup(req, res) {
     const { snippetGroupId } = req.params;
-    // TODO: Implement authentication but don't send FORBIDDEN
-    // If user is logged in AND the snippet group is hidden,
-    // Check if the snippet group belongs to the user
-    // If not the user can't see it.
 
     if (!snippetGroupId) {
         res.status(400).json({ error: 'Snippet group id not provided.' });
         return;
     }
 
-    const snippetGroup: SnippetGroup = await findSnippetGroup({ snippetGroupId });
+    const snippetGroup: SnippetGroup = await sc.findSnippetGroup({ snippetGroupId });
     
     if (!snippetGroup) {
         res.status(404).json({ error: 'Snippet group not found.' });
@@ -254,7 +230,7 @@ async function getSnippetGroup(req, res) {
         }
     }
 
-    const snippets = await findSnippetGroupSnippets({ snippetGroupId });
+    const snippets = await sc.findSnippetGroupSnippets({ snippetGroupId });
 
     res.status(200).json({ snippetGroup, snippets });
     return;
@@ -279,7 +255,7 @@ async function addUserSnippetGroup(req, res) {
 
     const userId = res.locals.auth.id;
 
-    const snippetGroup = await createSnippetGroup({
+    const snippetGroup = await sc.createSnippetGroup({
         snippetGroup: {
             userId,
             title,
@@ -294,7 +270,7 @@ async function addUserSnippetGroup(req, res) {
     const createdSnippets = await Promise.all(snippets.map(async (snippet: Snippet) => {
             snippet.userId = userId;
             snippet.snippetGroupId = snippetGroupId;
-            return await createSnippet({ snippet });
+            return await sc.createSnippet({ snippet });
         }
     ));
 
@@ -321,27 +297,43 @@ async function editUserSnippetGroup(req, res) {
     if (typeof description !== 'undefined') snippetGroupData.description = description;
     if (typeof tags !== 'undefined') snippetGroupData.tags = tags;
 
-    await editSnippetGroup({
-        snippetGroupId,
-        snippetGroupData,
-        onSuccess: (updatedSnippetGroup) => {
-            res.status(200).json({ success: true, snippetGroup: updatedSnippetGroup });
-            return;
-        },
-        onError: (error) => {
-            res.status(500).json({ error });
-            return;
-        }
-    });
+    const updatedSnippetGroup = await sc.editSnippetGroup({ snippetGroupId, snippetGroupData });
+
+    res.status(200).json({ success: true, snippetGroup: updatedSnippetGroup });
+    return;
+}
+
+interface EditUserSnippetReq {
+    params: {
+        snippetId: string;
+    };
+    body: Snippet
+}
+async function editUserSnippet(req: EditUserSnippetReq, res) {
+    const { snippetId } = req.params;
+    
+    const snippetData: Snippet = req.body;
+
+    // TODO: Validate snippet data
+
+    const updatedSnippet = await sc.editSnippet({ snippetId, snippetData });
+
+    if (updatedSnippet) {
+        res.status(200).json({ success: true, snippet: updatedSnippet });
+        return;   
+    }
+
+    res.status(500).json({ error: 'Snippet not found.' });
+    return;
 }
 
 // Tested
 async function deleteUserSnippetGroup(req, res) {
     const { snippetGroupId } = req.params;
 
-    const deletedSnippets = await deleteSnippetGroupSnippets({ snippetGroupId });
+    const deletedSnippets = await sc.deleteSnippetGroupSnippets({ snippetGroupId });
 
-    const deletedSnippetGroup = await deleteSnippetGroup({ snippetGroupId });
+    const deletedSnippetGroup = await sc.deleteSnippetGroup({ snippetGroupId });
 
     res.status(200).json({ success: true, deletedSnippetGroup, deletedSnippets });
 }
@@ -359,6 +351,7 @@ const api = {
     getUserSnippetGroup,
     addUserSnippetGroup,
     editUserSnippetGroup,
+    editUserSnippet,
     deleteUserSnippetGroup
 };
 
