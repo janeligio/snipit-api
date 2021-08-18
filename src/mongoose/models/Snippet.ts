@@ -53,17 +53,20 @@ export const SnippetSchema = new Schema<Snippet>({
     title: {
         maxLength: 100,
         type: String,
-        trim: true
+        trim: true,
+        default: ''
     },
     description: {
         type: String,
         maxLength: 1000,
-        trim: true
+        trim: true,
+        default: ''
     },
     code: {
         type: String,
         maxLength: 3000,
-        trim: true
+        trim: true,
+        default: ''
     },
     language: {
         type: String,

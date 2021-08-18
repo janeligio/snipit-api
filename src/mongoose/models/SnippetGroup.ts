@@ -20,6 +20,8 @@ export interface SnippetGroup {
     hidden?: boolean;
     /** Snippets in the snippet group */
     snippets?: Snippet[];
+    /** After a query, the snippet group data is in this field */
+    _doc?: object;
 }
 
 const SnippetGroupSchema = new Schema<SnippetGroup>({

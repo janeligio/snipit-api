@@ -104,6 +104,7 @@ async function findSnippetGroup({ snippetGroupId }) {
 
 // Finds all snippets with the given snippetGroupId
 async function findSnippetGroupSnippets({ snippetGroupId }) {
+    // const projection = 'id date updated userId snippetGroupId title description code language filename order';
     const snippets: Snippet[] = await SnippetModel.find({ snippetGroupId }).exec();
 
     return snippets;
@@ -138,9 +139,14 @@ async function findUserSnippetGroups({ userId, hidden }: FindUserSnippetGroupsAr
 
     const snippetGroups: SnippetGroup[] = await SnippetGroupModel.find(query).exec();
 
-    _.forEach(snippetGroups, async (snippetGroup: SnippetGroup) => {
-        snippetGroup.snippets = await SnippetModel.find({ snippetGroupId: snippetGroup._id.toString() }).exec();
-    });
+    // await Promise.all(_.map(snippetGroups, async (snippetGroup) => {
+    //     snippetGroup.snippets = await SnippetModel.find({ snippetGroupId: snippetGroup._id }).exec();
+    //     return;
+    //     })
+    // );
+    // _.forEach(snippetGroups, async (snippetGroup: SnippetGroup) => {
+    //     snippetGroup.snippets = await SnippetModel.find({ snippetGroupId: snippetGroup._id.toString() }).exec();
+    // });
 
     return snippetGroups;
 }

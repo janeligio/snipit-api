@@ -134,7 +134,23 @@ async function getUserDataPrivate(req, res) {
     // Fetch user's snippet groups
     const snippetGroups = await sc.findUserSnippetGroups({ userId: user._id.toString(), hidden: true });
 
-    res.status(200).json({ user, snippets: snippetGroups });
+    const snippetPromises: Snippet[][] = [];
+
+    for (const snippetGroup of snippetGroups) {
+        snippetPromises.push(await sc.findSnippetGroupSnippets({ snippetGroupId: snippetGroup._id.toString() }));
+    }
+
+    const snippets = await Promise.all(snippetPromises);
+
+    const mappedSnippetGroups = [];
+
+    // Attach snippets to their snippet groups
+    for (let i = 0; i < snippetGroups.length; i++) {
+        const mappedSnippetGroup = { ...snippetGroups[i]._doc, snippets: snippets[i] };
+        mappedSnippetGroups.push(mappedSnippetGroup);
+    }
+
+    res.status(200).json({ user, snippets: mappedSnippetGroups });
     return;
 }
 
